@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<title>Project Details — PCB Roadmap</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary:  #f6f6f7;
+    --bg-card:     #ffffff;
+    --bg-input:    #f3f3f6;
+    --bg-sidebar:  #1a1a1f;
+    --border:      rgba(0,0,0,0.08);
+    --border-hover: rgba(0,0,0,0.14);
+    --text-primary: #1a1a1f;
+    --text-secondary: #6b6b76;
+    --text-muted:  #9a9aa4;
+    --accent-green: #0088FF;
+    --accent-green-dim: rgba(0,136,255,0.08);
+    --accent-green-hover: #0066FF;
+    --radius:      12px;
+    --radius-sm:   8px;
+    --shadow:      0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-lg:   0 8px 30px rgba(0,0,0,0.08);
+    --font-sans:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --sidebar-width: 200px;
+    --sidebar-collapsed: 56px;
+    --filter-h:  48px;
+  }
+
+  [data-theme="dark"] {
+    --bg-primary:  #101114;
+    --bg-card:     #202227;
+    --bg-input:    #292C32;
+    --bg-sidebar:  #050506;
+    --border:      rgba(252,252,253,0.08);
+    --border-hover: rgba(252,252,253,0.15);
+    --text-primary: #FCFCFD;
+    --text-secondary: #9DA1AE;
+    --text-muted:  #676D7E;
+    --shadow:      0 1px 3px rgba(0,0,0,0.4);
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.4);
+    --shadow-lg:   0 8px 30px rgba(0,0,0,0.5);
+  }
+
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-sans); font-size: 13px; height: 100vh; display: flex; flex-direction: row; overflow: hidden; }
+
+  header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    gap: 16px;
+    height: 56px;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  #refresh-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  #refresh-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+
+  #filter-bar {
+    height: var(--filter-h);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    flex-shrink: 0;
+    overflow-x: auto;
+  }
+  #filter-bar select, #filter-bar input[type="text"] {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 12px;
+    padding: 4px 8px;
+    outline: none;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #filter-bar select option { background: var(--bg-input); }
+  #search-input { width: 180px; flex-shrink: 0; }
+  .filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+  #clear-btn {
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  #clear-btn:hover { color: var(--text-primary); background: var(--bg-input); }
+  #row-count { font-size: 11px; color: var(--text-muted); margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
+  #table-wrap { flex: 1; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+  thead { position: sticky; top: 0; z-index: 10; }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+  }
+  th:hover { color: var(--text-primary); }
+  th .sort-arrow { font-size: 9px; margin-left: 3px; opacity: .4; }
+  th.sorted .sort-arrow { opacity: 1; color: var(--accent-green); }
+  th.nosort { cursor: default; }
+  th.nosort:hover { color: var(--text-muted); }
+
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: middle;
+  }
+  tr:hover td { background: var(--bg-input); }
+
+  .muted-cell { color: var(--text-muted); }
+  .col-name { min-width: 220px; max-width: 320px; }
+  .proj-name-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
+  a.proj-link { color: var(--text-primary); text-decoration: none; }
+  a.proj-link:hover { color: var(--accent-green); text-decoration: underline; }
+
+  /* Priority badges */
+  .priority-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .priority-p0 { background: #fee2e2; color: #b91c1c; }
+  .priority-p1 { background: #fef3c7; color: #b45309; }
+  .priority-p2 { background: #dbeafe; color: #1d4ed8; }
+  .priority-p3 { background: #dcfce7; color: #15803d; }
+  .priority-p4 { background: #f1f5f9; color: #475569; }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .status-in-progress { background: #dbeafe; color: #1d4ed8; }
+  .status-complete { background: #dcfce7; color: #15803d; }
+  .status-shipped { background: #dcfce7; color: #15803d; }
+  .status-stopped { background: #fee2e2; color: #b91c1c; }
+  .status-backlog { background: #f1f5f9; color: #475569; }
+  .status-paused { background: #fef3c7; color: #b45309; }
+
+  /* Theme pills */
+  .theme-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Editions badge */
+  .editions-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .editions-s26 { background: #8b5cf6; color: #fff; }
+  .editions-w27 { background: #0891b2; color: #fff; }
+  .editions-no { background: #f1f5f9; color: #64748b; }
+
+  /* Team badge */
+  .team-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Partner badge */
+  .partner-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    background: #fef3c7;
+    color: #b45309;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .empty-state { padding: 60px; text-align: center; color: var(--text-muted); }
+
+  /* Sidebar */
+  .app-layout { display: flex; height: 100vh; overflow: hidden; width: 100%; }
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-sidebar);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    z-index: 100;
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    min-height: 56px;
+  }
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .sidebar-logo { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
+  .sidebar-title { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: -0.01em; transition: opacity 0.2s; white-space: nowrap; }
+  .sidebar.collapsed .sidebar-title { opacity: 0; width: 0; }
+  .sidebar-toggle {
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    cursor: pointer; padding: 6px; border-radius: 6px;
+    transition: all 0.15s; flex-shrink: 0; font-size: 11px;
+  }
+  .sidebar-toggle:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+  .sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 0; }
+  .sidebar.collapsed .sidebar-brand { display: none; }
+  .sidebar-nav {
+    padding: 10px 8px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .sidebar-spacer { flex: 1; }
+  .sidebar-bottom {
+    padding: 8px 8px 16px;
+    display: flex; flex-direction: column; gap: 2px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px; cursor: pointer;
+    color: rgba(255,255,255,0.5); transition: all 0.15s;
+    white-space: nowrap; overflow: hidden;
+    font-size: 13px; font-weight: 500;
+    text-decoration: none; position: relative;
+  }
+  .nav-item::before {
+    content: ''; position: absolute; left: 0; top: 50%;
+    transform: translateY(-50%); width: 3px; height: 0;
+    border-radius: 0 2px 2px 0; background: var(--accent-green);
+    transition: height 0.2s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-item:hover::before { height: 14px; }
+  .nav-item.active { background: rgba(0,136,255,0.15); color: var(--accent-green); font-weight: 600; }
+  .nav-item.active::before { height: 20px; }
+  .nav-item i { width: 16px; text-align: center; flex-shrink: 0; font-size: 13px; }
+  .nav-label { transition: opacity 0.2s; }
+  .sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+  .sidebar.collapsed .nav-item { justify-content: center; padding: 9px; gap: 0; }
+  .sidebar.collapsed .sidebar-nav,
+  .sidebar.collapsed .sidebar-bottom { padding-left: 0; padding-right: 0; align-items: center; }
+
+  .main-content {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-primary);
+  }
+
+  [data-theme="dark"] th { background: var(--bg-card); }
+  [data-theme="dark"] tr:hover td { background: var(--bg-input); }
+  [data-theme="dark"] #filter-bar { background: var(--bg-card); }
+  [data-theme="dark"] #filter-bar select,
+  [data-theme="dark"] #filter-bar input[type="text"] { background: var(--bg-input); color: var(--text-primary); border-color: var(--border); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent-green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .desc-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .desc-cell:hover {
+    white-space: normal;
+    overflow: visible;
+    position: relative;
+    z-index: 5;
+    background: var(--bg-card);
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .source-link {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .source-link:hover { color: var(--accent-green); }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <span class="sidebar-logo">💳</span>
+      <span class="sidebar-title">PCB Roadmap</span>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Collapse"><i class="fas fa-chevron-left"></i></button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html" class="nav-item active">
+      <i class="fas fa-table-cells"></i>
+      <span class="nav-label">All Projects</span>
+    </a>
+    <a href="timeline.html" class="nav-item">
+      <i class="fas fa-chart-gantt"></i>
+      <span class="nav-label">Timeline</span>
+    </a>
+    <a href="themes.html" class="nav-item">
+      <i class="fas fa-layer-group"></i>
+      <span class="nav-label">By Theme</span>
+    </a>
+    <a href="slip.html" class="nav-item">
+      <i class="fas fa-clock-rotate-left"></i>
+      <span class="nav-label">Slip</span>
+    </a>
+  </div>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-bottom">
+    <a href="https://docs.google.com/spreadsheets/d/17xd1aWdtf33kUk3giF5WyC4dJpbClOjPGh2cVMYiuvI" target="_blank" class="source-link" style="padding: 9px 12px;">
+      <i class="fas fa-external-link-alt"></i>
+      <span class="nav-label">Source Sheet</span>
+    </a>
+    <div class="nav-item" id="darkModeToggle">
+      <i class="fas fa-moon"></i>
+      <span class="nav-label">Dark Mode</span>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+<header>
+  <div class="header-left">
+    <span style="font-weight: 600; font-size: 15px;">PCB Stack Ranked 2026 H1 Priorities</span>
+  </div>
+  <div class="header-right">
+    <button id="refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
+  </div>
+</header>
+
+<div id="filter-bar">
+  <input id="search-input" type="text" placeholder="Search projects…">
+  <div class="filter-sep"></div>
+  <select id="filter-priority">
+    <option value="">All priorities</option>
+    <option value="P0">P0</option>
+    <option value="P1">P1</option>
+    <option value="P2">P2</option>
+    <option value="P3">P3</option>
+    <option value="P4">P4</option>
+  </select>
+  <select id="filter-half"><option value="">All halves</option></select>
+  <select id="filter-team"><option value="">All teams</option></select>
+  <select id="filter-subteam"><option value="">All sub teams</option></select>
+  <select id="filter-bigrock"><option value="">All big rocks</option></select>
+  <select id="filter-editions">
+    <option value="">All editions</option>
+    <option value="S26">S26 only</option>
+    <option value="W27">W27 only</option>
+    <option value="No">Not in Editions</option>
+  </select>
+  <select id="filter-tos"><option value="">All ToS status</option></select>
+  <select id="filter-partner"><option value="">All partner deps</option></select>
+  <select id="filter-status"><option value="">All statuses</option></select>
+  <button id="clear-btn">Clear</button>
+  <span id="row-count"></span>
+</div>
+
+<div id="table-wrap">
+  <div class="empty-state"><span class="loading-spinner"></span> Loading data from Google Sheets…</div>
+</div>
+</div>
+
+</div>
+
+<script>
+// Google Sheets configuration
+const SPREADSHEET_ID = '17xd1aWdtf33kUk3giF5WyC4dJpbClOjPGh2cVMYiuvI';
+const SHEET_NAME = 'Editions 2026 Rohit Review';
+const SHEETS_API_KEY = ''; // Add your API key here for public access, or leave empty for manual data load
+
+// Theme colors for visual distinction
+const THEME_COLORS = {
+  '~100% Shopify Payments': { bg: '#dbeafe', color: '#1d4ed8' },
+  'Defend merchants and Shopify from bad actors': { bg: '#fee2e2', color: '#b91c1c' },
+  'Set a new standard for baseline quality': { bg: '#dcfce7', color: '#15803d' },
+  'Gain sovereignty over our payments systems': { bg: '#fef3c7', color: '#b45309' },
+  'Make Shop Pay the dominant buyer wallet for commerce': { bg: '#f3e8ff', color: '#7c3aed' },
+  'Enable merchants to sell to buyers anywhere in the world': { bg: '#cffafe', color: '#0891b2' },
+  'Shopify Payments Always On': { bg: '#fce7f3', color: '#be185d' },
+  'Eng and Infra Excellence': { bg: '#e0e7ff', color: '#4338ca' },
+};
+
+const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, P4: 4 };
+
+let allProjects = [];
+let filters = { search: '', priority: '', half: '', team: '', subteam: '', bigrock: '', editions: '', tos: '', partner: '', status: '' };
+let sortCol = 'rank', sortDir = 1;
+
+function parseProjects(rows) {
+  if (!rows || rows.length < 2) return [];
+  const headers = rows[0];
+  const colIndex = {};
+  headers.forEach((h, i) => { colIndex[h.toLowerCase().trim()] = i; });
+
+  return rows.slice(1).map((row, idx) => {
+    const get = (key) => {
+      const i = colIndex[key.toLowerCase()];
+      return i !== undefined ? (row[i] || '').trim() : '';
+    };
+
+    const project = get('project (ensure vault project is linked)') || get('project');
+    if (!project) return null;
+
+    return {
+      id: idx + 1,
+      theme: get('pcb theme'),
+      rank: parseInt(get('rank')) || 999,
+      half: get('h'),
+      priority: get('priority'),
+      bigRock: get('pcb big rock'),
+      name: project,
+      description: get('description'),
+      team: get('team'),
+      subTeam: get('sub team') || get('subteam'),
+      champion: get('champion'),
+      startDate: get('start date') || get('starts'),
+      shipping: get('shipping'),
+      editions: get('editions'),
+      needsUX: get('needs ux'),
+      needsToS: get('need tos /merchant comms'),
+      dependencies: get('dependencies'),
+      partnerDependency: get('partner dependency'),
+      status: get('status') || 'Unknown',
+    };
+  }).filter(p => p !== null);
+}
+
+function getFiltered() {
+  let ps = allProjects.slice();
+  const q = filters.search.toLowerCase();
+  if (q) ps = ps.filter(p => 
+    p.name.toLowerCase().includes(q) || 
+    (p.description || '').toLowerCase().includes(q) ||
+    (p.champion || '').toLowerCase().includes(q) ||
+    (p.bigRock || '').toLowerCase().includes(q) ||
+    (p.team || '').toLowerCase().includes(q)
+  );
+  if (filters.priority) ps = ps.filter(p => p.priority === filters.priority);
+  if (filters.half) ps = ps.filter(p => p.half === filters.half);
+  if (filters.team) ps = ps.filter(p => p.team === filters.team);
+  if (filters.subteam) ps = ps.filter(p => p.subTeam === filters.subteam);
+  if (filters.bigrock) ps = ps.filter(p => p.bigRock === filters.bigrock);
+  if (filters.editions) {
+    if (filters.editions === 'S26') {
+      ps = ps.filter(p => (p.editions || '').toUpperCase().includes('S26'));
+    } else if (filters.editions === 'W27') {
+      ps = ps.filter(p => (p.editions || '').toUpperCase().includes('W27'));
+    } else if (filters.editions === 'No') {
+      ps = ps.filter(p => (p.editions || '').toUpperCase() === 'NO' || !p.editions);
+    }
+  }
+  if (filters.tos) ps = ps.filter(p => (p.needsToS || '').toLowerCase().includes(filters.tos.toLowerCase()));
+  if (filters.partner) ps = ps.filter(p => (p.partnerDependency || '').toLowerCase().includes(filters.partner.toLowerCase()));
+  if (filters.status) ps = ps.filter(p => p.status.toLowerCase() === filters.status.toLowerCase());
+
+  ps.sort((a, b) => {
+    let va, vb;
+    if (sortCol === 'rank') { va = a.rank; vb = b.rank; return (va - vb) * sortDir; }
+    if (sortCol === 'priority') {
+      va = PRIORITY_ORDER[a.priority] ?? 99;
+      vb = PRIORITY_ORDER[b.priority] ?? 99;
+      return (va - vb) * sortDir;
+    }
+    if (sortCol === 'name') { va = a.name; vb = b.name; }
+    else if (sortCol === 'team') { va = a.team; vb = b.team; }
+    else if (sortCol === 'subTeam') { va = a.subTeam; vb = b.subTeam; }
+    else if (sortCol === 'champion') { va = a.champion; vb = b.champion; }
+    else if (sortCol === 'shipping') { va = a.shipping; vb = b.shipping; }
+    else if (sortCol === 'partnerDependency') { va = a.partnerDependency; vb = b.partnerDependency; }
+    else if (sortCol === 'status') { va = a.status; vb = b.status; }
+    else { va = a.name; vb = b.name; }
+    return (va || '').localeCompare(vb || '') * sortDir;
+  });
+
+  return ps;
+}
+
+function buildFilterOptions() {
+  const halves = [...new Set(allProjects.map(p => p.half).filter(Boolean))].sort();
+  const teams = [...new Set(allProjects.map(p => p.team).filter(Boolean))].sort();
+  const subteams = [...new Set(allProjects.map(p => p.subTeam).filter(Boolean))].sort();
+  const bigrocks = [...new Set(allProjects.map(p => p.bigRock).filter(v => v && v !== 'N/A'))].sort();
+  const statuses = [...new Set(allProjects.map(p => p.status).filter(Boolean))].sort();
+  const tosVals = [...new Set(allProjects.map(p => p.needsToS).filter(Boolean))].sort();
+  const partners = [...new Set(allProjects.map(p => p.partnerDependency).filter(Boolean))].sort();
+
+  [
+    ['filter-half', halves, 'All halves'],
+    ['filter-team', teams, 'All teams'],
+    ['filter-subteam', subteams, 'All sub teams'],
+    ['filter-bigrock', bigrocks, 'All big rocks'],
+    ['filter-status', statuses, 'All statuses'],
+    ['filter-tos', tosVals, 'All ToS status'],
+    ['filter-partner', partners, 'All partner deps'],
+  ].forEach(([id, vals, placeholder]) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">${placeholder}</option>`;
+    vals.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = v.length > 30 ? v.substring(0, 30) + '…' : v;
+      sel.appendChild(o);
+    });
+    sel.value = cur;
+  });
+}
+
+function getPriorityClass(p) {
+  const prio = (p || '').toUpperCase();
+  if (prio === 'P0') return 'priority-p0';
+  if (prio === 'P1') return 'priority-p1';
+  if (prio === 'P2') return 'priority-p2';
+  if (prio === 'P3') return 'priority-p3';
+  if (prio === 'P4') return 'priority-p4';
+  return '';
+}
+
+function getStatusClass(s) {
+  const status = (s || '').toLowerCase();
+  if (status.includes('progress')) return 'status-in-progress';
+  if (status.includes('complete') || status.includes('shipped')) return 'status-complete';
+  if (status.includes('stopped') || status.includes('blocked')) return 'status-stopped';
+  if (status.includes('backlog')) return 'status-backlog';
+  if (status.includes('paused')) return 'status-paused';
+  return '';
+}
+
+function getEditionsBadge(e) {
+  const ed = (e || '').trim().toUpperCase();
+  if (ed.includes('S26')) return '<span class="editions-badge editions-s26">S26</span>';
+  if (ed.includes('W27')) return '<span class="editions-badge editions-w27">W27</span>';
+  if (ed === 'NO' || !ed) return '<span class="editions-badge editions-no">—</span>';
+  return `<span class="editions-badge editions-no">${e}</span>`;
+}
+
+function getThemePill(theme) {
+  if (!theme) return '<span class="muted-cell">—</span>';
+  const colors = THEME_COLORS[theme] || { bg: '#f1f5f9', color: '#475569' };
+  return `<span class="theme-pill" style="background:${colors.bg};color:${colors.color}" title="${theme}">${theme}</span>`;
+}
+
+function render() {
+  const wrap = document.getElementById('table-wrap');
+  const ps = getFiltered();
+  document.getElementById('row-count').textContent = `${ps.length} of ${allProjects.length}`;
+
+  if (!ps.length) {
+    wrap.innerHTML = '<div class="empty-state">No projects match the current filters.</div>';
+    return;
+  }
+
+  const colDef = [
+    { key: 'rank', label: '#', sort: true },
+    { key: 'priority', label: 'Priority', sort: true },
+    { key: 'name', label: 'Project', sort: true },
+    { key: 'team', label: 'Team', sort: true },
+    { key: 'subTeam', label: 'Sub Team', sort: true },
+    { key: 'champion', label: 'Champion', sort: true },
+    { key: 'shipping', label: 'Ships', sort: true },
+    { key: 'status', label: 'Status', sort: true },
+    { key: 'editions', label: 'Editions', sort: false },
+    { key: 'partnerDependency', label: 'Partner', sort: true },
+    { key: 'needsToS', label: 'ToS/Comms', sort: false },
+  ];
+
+  const thead = `<thead><tr>${colDef.map(c =>
+    `<th ${c.sort ? `data-col="${c.key}"` : 'class="nosort"'} ${sortCol === c.key ? ' class="sorted"' : ''}>
+      ${c.label}${c.sort ? `<span class="sort-arrow">${sortCol === c.key ? (sortDir === 1 ? '▲' : '▼') : '▲'}</span>` : ''}
+    </th>`
+  ).join('')}</tr></thead>`;
+
+  const rows = ps.map(p => {
+    const prioClass = getPriorityClass(p.priority);
+    const statusClass = getStatusClass(p.status);
+    const partnerVal = (p.partnerDependency || '').toLowerCase();
+    const hasPartner = partnerVal && partnerVal !== 'no';
+    
+    return `<tr>
+      <td class="muted-cell">${p.rank !== 999 ? p.rank : '—'}</td>
+      <td>${p.priority ? `<span class="priority-badge ${prioClass}">${p.priority}</span>` : '<span class="muted-cell">—</span>'}</td>
+      <td class="col-name">
+        <div class="proj-name-cell" title="${p.name}">${p.name}</div>
+        ${p.bigRock && p.bigRock !== 'N/A' ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${p.bigRock}</div>` : ''}
+      </td>
+      <td><span class="team-badge">${p.team || '—'}</span></td>
+      <td class="muted-cell">${p.subTeam || '—'}</td>
+      <td class="muted-cell">${p.champion || '—'}</td>
+      <td class="muted-cell">${p.shipping || '—'}</td>
+      <td>${p.status && p.status !== 'Unknown' ? `<span class="status-badge ${statusClass}">${p.status}</span>` : '<span class="muted-cell">—</span>'}</td>
+      <td>${getEditionsBadge(p.editions)}</td>
+      <td>${hasPartner ? `<span class="partner-badge">${p.partnerDependency}</span>` : '<span class="muted-cell">—</span>'}</td>
+      <td class="muted-cell">${p.needsToS || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table>${thead}<tbody>${rows}</tbody></table>`;
+
+  wrap.querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortCol === col) sortDir *= -1;
+      else { sortCol = col; sortDir = 1; }
+      render();
+    });
+  });
+}
+
+// Filter events
+document.getElementById('search-input').addEventListener('input', e => {
+  filters.search = e.target.value.trim(); render();
+});
+[
+  ['filter-priority', 'priority'],
+  ['filter-half', 'half'],
+  ['filter-team', 'team'],
+  ['filter-subteam', 'subteam'],
+  ['filter-bigrock', 'bigrock'],
+  ['filter-editions', 'editions'],
+  ['filter-tos', 'tos'],
+  ['filter-partner', 'partner'],
+  ['filter-status', 'status'],
+].forEach(([id, key]) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', e => {
+    filters[key] = e.target.value; render();
+  });
+});
+document.getElementById('clear-btn').addEventListener('click', () => {
+  filters = { search: '', priority: '', half: '', team: '', subteam: '', bigrock: '', editions: '', tos: '', partner: '', status: '' };
+  document.getElementById('search-input').value = '';
+  ['filter-priority', 'filter-half', 'filter-team', 'filter-subteam', 'filter-bigrock', 'filter-editions', 'filter-tos', 'filter-partner', 'filter-status'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  render();
+});
+
+// Refresh button
+document.getElementById('refresh-btn').addEventListener('click', loadData);
+
+// Load data from embedded JSON (populated at build time)
+async function loadData() {
+  const wrap = document.getElementById('table-wrap');
+  wrap.innerHTML = '<div class="empty-state"><span class="loading-spinner"></span> Loading data…</div>';
+  
+  try {
+    const response = await fetch('data/projects.json');
+    if (!response.ok) throw new Error('Failed to load data');
+    const data = await response.json();
+    allProjects = parseProjects(data.rows);
+    buildFilterOptions();
+    render();
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty-state">Failed to load data: ${e.message}<br><br>
+      <small>Make sure data/projects.json exists and contains the spreadsheet data.</small></div>`;
+    console.error(e);
+  }
+}
+
+// Dark mode toggle
+(function() {
+  const toggle = document.getElementById('darkModeToggle');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+
+  function updateDarkIcon() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const icon = toggle ? toggle.querySelector('i') : null;
+    if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+  }
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('pcb-theme', next);
+      updateDarkIcon();
+    });
+    
+    const saved = localStorage.getItem('pcb-theme');
+    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', saved || sys);
+    updateDarkIcon();
+  }
+
+  if (sidebarToggle && sidebar) {
+    const saved = localStorage.getItem('pcb-sidebar-collapsed');
+    if (saved === '1') sidebar.classList.add('collapsed');
+
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      localStorage.setItem('pcb-sidebar-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+    });
+  }
+})();
+
+// Initialize
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>

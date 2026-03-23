@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<title>Slip — PCB Roadmap</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary:  #f6f6f7;
+    --bg-card:     #ffffff;
+    --bg-input:    #f3f3f6;
+    --bg-sidebar:  #1a1a1f;
+    --border:      rgba(0,0,0,0.08);
+    --border-hover: rgba(0,0,0,0.14);
+    --text-primary: #1a1a1f;
+    --text-secondary: #6b6b76;
+    --text-muted:  #9a9aa4;
+    --accent-green: #0088FF;
+    --accent-red: #ef4444;
+    --accent-yellow: #f59e0b;
+    --radius:      12px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06);
+    --font-sans:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --sidebar-width: 200px;
+    --sidebar-collapsed: 56px;
+    --filter-h:  48px;
+  }
+
+  [data-theme="dark"] {
+    --bg-primary:  #101114;
+    --bg-card:     #202227;
+    --bg-input:    #292C32;
+    --bg-sidebar:  #050506;
+    --border:      rgba(252,252,253,0.08);
+    --border-hover: rgba(252,252,253,0.15);
+    --text-primary: #FCFCFD;
+    --text-secondary: #9DA1AE;
+    --text-muted:  #676D7E;
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-sans); font-size: 13px; height: 100vh; display: flex; overflow: hidden; }
+
+  header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    gap: 16px;
+    height: 56px;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-subtitle { font-size: 12px; color: var(--text-muted); }
+
+  #filter-bar {
+    height: var(--filter-h);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    flex-shrink: 0;
+    overflow-x: auto;
+  }
+  #filter-bar select, #filter-bar input[type="text"] {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 12px;
+    padding: 4px 8px;
+    outline: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  #search-input { width: 180px; }
+  .filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+  #clear-btn {
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  #clear-btn:hover { color: var(--text-primary); background: var(--bg-input); }
+  #row-count { font-size: 11px; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
+
+  #table-wrap { flex: 1; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+  thead { position: sticky; top: 0; z-index: 10; }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+  }
+  th:hover { color: var(--text-primary); }
+  th .sort-arrow { font-size: 9px; margin-left: 3px; opacity: .4; }
+  th.sorted .sort-arrow { opacity: 1; color: var(--accent-green); }
+
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: top;
+  }
+  tr:hover td { background: var(--bg-input); }
+
+  .muted-cell { color: var(--text-muted); }
+
+  /* Team badge */
+  .team-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--bg-input);
+    color: var(--text-secondary);
+  }
+
+  /* Phase badge */
+  .phase-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .phase-prototype { background: #f3e8ff; color: #7c3aed; }
+  .phase-build { background: #fef3c7; color: #b45309; }
+  .phase-release { background: #dcfce7; color: #15803d; }
+  .phase-observe { background: #dbeafe; color: #1d4ed8; }
+
+  /* Milestone badge */
+  .milestone-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+
+  /* Days changed badge */
+  .days-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .days-positive { background: #fee2e2; color: #b91c1c; }
+  .days-negative { background: #dcfce7; color: #15803d; }
+
+  /* Date change display */
+  .date-change {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .date-old { color: var(--text-muted); text-decoration: line-through; }
+  .date-arrow { color: var(--text-muted); }
+  .date-new { color: var(--text-primary); font-weight: 500; }
+
+  /* Reason cell */
+  .reason-cell {
+    max-width: 350px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .reason-cell.truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .reason-cell.truncated:hover {
+    -webkit-line-clamp: unset;
+    background: var(--bg-card);
+    position: relative;
+    z-index: 5;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  /* Summary cards */
+  .summary-cards {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-card {
+    background: var(--bg-input);
+    border-radius: 10px;
+    padding: 12px 16px;
+    min-width: 120px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 2px solid transparent;
+  }
+  .summary-card:hover { background: var(--border); }
+  .summary-card.active { border-color: var(--accent-green); }
+  .summary-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .summary-card p { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .summary-card.total h3 { color: var(--text-primary); }
+  .summary-card.slip h3 { color: #b91c1c; }
+
+  .empty-state { padding: 60px; text-align: center; color: var(--text-muted); }
+
+  /* Executive insights */
+  .executive-insights {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .exec-insight {
+    background: var(--bg-input);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border-left: 4px solid var(--border);
+  }
+  .exec-insight.working { border-left-color: #10b981; }
+  .exec-insight.not-working { border-left-color: #ef4444; }
+  .exec-insight.pressure { border-left-color: #f59e0b; }
+  .exec-insight-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .exec-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .exec-insight.working .exec-icon { background: #10b981; color: white; }
+  .exec-insight.not-working .exec-icon { background: #ef4444; color: white; }
+  .exec-insight.pressure .exec-icon { background: #f59e0b; color: white; }
+  .exec-insight h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .exec-insight p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .exec-insight p:last-child { margin-bottom: 0; }
+  .exec-insight ul {
+    margin: 10px 0;
+    padding-left: 18px;
+  }
+  .exec-insight li {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .pressure-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pressure-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .pressure-tag {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .pressure-tag.partner { background: #fef3c7; color: #b45309; }
+  .pressure-tag.process { background: #e0e7ff; color: #4338ca; }
+
+  /* Cause breakdown collapsible */
+  .cause-breakdown {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .cause-breakdown summary {
+    padding: 12px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+  .cause-breakdown summary:hover { color: var(--text-primary); }
+  .cause-breakdown[open] summary { border-bottom: 1px solid var(--border); }
+  .cause-breakdown .insights-grid { padding: 16px 20px; }
+
+  /* Insights section */
+  .insights-section {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+  }
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .insight-card {
+    background: var(--bg-input);
+    border-radius: 10px;
+    padding: 14px;
+    border-left: 4px solid var(--accent-green);
+  }
+  .insight-card.partner { border-left-color: #ef4444; }
+  .insight-card.technical { border-left-color: #f59e0b; }
+  .insight-card.scope { border-left-color: #8b5cf6; }
+  .insight-card.alignment { border-left-color: #3b82f6; }
+  .insight-card.rollout { border-left-color: #10b981; }
+  .insight-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .insight-card h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .insight-card .count {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .insight-card .days {
+    font-size: 11px;
+    color: #b91c1c;
+    font-weight: 600;
+  }
+  .insight-card p {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: 6px;
+  }
+  .insight-examples {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .insight-examples span {
+    display: inline-block;
+    font-size: 10px;
+    background: var(--bg-card);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 2px 4px 2px 0;
+    color: var(--text-muted);
+  }
+
+  /* Sidebar */
+  .app-layout { display: flex; height: 100vh; overflow: hidden; width: 100%; }
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-sidebar);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.25s;
+    overflow: hidden;
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    min-height: 56px;
+  }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+  .sidebar-logo { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
+  .sidebar-title { font-size: 13px; font-weight: 700; color: #fff; transition: opacity 0.2s; white-space: nowrap; }
+  .sidebar.collapsed .sidebar-title { opacity: 0; width: 0; }
+  .sidebar-toggle {
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    cursor: pointer; padding: 6px; border-radius: 6px; font-size: 11px;
+  }
+  .sidebar-toggle:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+  .sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 0; }
+  .sidebar.collapsed .sidebar-brand { display: none; }
+  .sidebar-nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-spacer { flex: 1; }
+  .sidebar-bottom { padding: 8px 8px 16px; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px; cursor: pointer;
+    color: rgba(255,255,255,0.5); transition: all 0.15s;
+    white-space: nowrap; overflow: hidden;
+    font-size: 13px; font-weight: 500;
+    text-decoration: none; position: relative;
+  }
+  .nav-item::before {
+    content: ''; position: absolute; left: 0; top: 50%;
+    transform: translateY(-50%); width: 3px; height: 0;
+    border-radius: 0 2px 2px 0; background: var(--accent-green);
+    transition: height 0.2s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-item:hover::before { height: 14px; }
+  .nav-item.active { background: rgba(0,136,255,0.15); color: var(--accent-green); font-weight: 600; }
+  .nav-item.active::before { height: 20px; }
+  .nav-item i { width: 16px; text-align: center; flex-shrink: 0; font-size: 13px; }
+  .nav-label { transition: opacity 0.2s; }
+  .sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+  .sidebar.collapsed .nav-item { justify-content: center; padding: 9px; gap: 0; }
+
+  .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
+
+  .loading-spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid var(--border); border-top-color: var(--accent-green);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .source-link { font-size: 11px; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+  .source-link:hover { color: var(--accent-green); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <span class="sidebar-logo">💳</span>
+      <span class="sidebar-title">PCB Roadmap</span>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Collapse"><i class="fas fa-chevron-left"></i></button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html" class="nav-item">
+      <i class="fas fa-table-cells"></i>
+      <span class="nav-label">All Projects</span>
+    </a>
+    <a href="timeline.html" class="nav-item">
+      <i class="fas fa-chart-gantt"></i>
+      <span class="nav-label">Timeline</span>
+    </a>
+    <a href="themes.html" class="nav-item">
+      <i class="fas fa-layer-group"></i>
+      <span class="nav-label">By Theme</span>
+    </a>
+    <a href="slip.html" class="nav-item active">
+      <i class="fas fa-clock-rotate-left"></i>
+      <span class="nav-label">Slip</span>
+    </a>
+  </div>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-bottom">
+    <a href="https://docs.google.com/spreadsheets/d/17xd1aWdtf33kUk3giF5WyC4dJpbClOjPGh2cVMYiuvI" target="_blank" class="source-link" style="padding: 9px 12px;">
+      <i class="fas fa-external-link-alt"></i>
+      <span class="nav-label">Source Sheet</span>
+    </a>
+    <div class="nav-item" id="darkModeToggle">
+      <i class="fas fa-moon"></i>
+      <span class="nav-label">Dark Mode</span>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+<header>
+  <div class="header-left">
+    <span style="font-weight: 600; font-size: 15px;">Timeline Slip</span>
+    <span class="header-subtitle">Projects with timeline changes from Vault</span>
+  </div>
+  <div class="header-right">
+    <button id="refresh-btn" style="padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-secondary); font-size: 12px; cursor: pointer;"><i class="fas fa-sync-alt"></i> Refresh</button>
+  </div>
+</header>
+
+<div class="summary-cards" id="summary-cards">
+  <div class="summary-card total active" data-filter="all">
+    <h3 id="total-count">—</h3>
+    <p>Total Changes</p>
+  </div>
+  <div class="summary-card slip" data-filter="slip">
+    <h3 id="slip-count">—</h3>
+    <p>Avg GA Slip</p>
+  </div>
+</div>
+
+<div class="executive-insights" id="executive-insights">
+  <div class="exec-insight working">
+    <div class="exec-insight-header">
+      <span class="exec-icon">✓</span>
+      <h4>What's Working</h4>
+    </div>
+    <p><strong>Engineering is executing strong.</strong> In 4 of 5 major slipped projects, code is ready but the org isn't. Adyen Disputes has been code-complete since Nov. USDC Cashback TOS approved, code ready since Feb. Migrate Core Payment Methods shipped to EA, uncovering integration issues early. Teams are hitting their engineering milestones—the delays come after.</p>
+  </div>
+  
+  <div class="exec-insight not-working">
+    <div class="exec-insight-header">
+      <span class="exec-icon">✗</span>
+      <h4>What's Not</h4>
+    </div>
+    <p><strong>Velocity losses are almost entirely in pre-build alignment and parallel work streams.</strong> Every major slip has a non-engineering dependency that could have started earlier:</p>
+    <ul>
+      <li><strong>Coinbase amendment</strong> — blocking USDC Cashback (+44 days)</li>
+      <li><strong>Adyen contract/testing coordination</strong> — blocking Disputes (+122 days), KYB/KYC (+26 days)</li>
+      <li><strong>Global-e alignment</strong> — extended MM Adoption timeline (+58 days)</li>
+      <li><strong>Data migration complexity</strong> — Shop Pay Credit Cards to Global Vault (+126 days)</li>
+    </ul>
+    <p>We're finishing code, then waiting weeks for signatures, partner testing slots, and decisions.</p>
+  </div>
+  
+  <div class="exec-insight pressure">
+    <div class="exec-insight-header">
+      <span class="exec-icon">→</span>
+      <h4>Where to Apply Pressure</h4>
+    </div>
+    <div class="pressure-items">
+      <div class="pressure-item">
+        <span class="pressure-tag partner">Coinbase</span>
+        <span>Amendment unsigned, blocking USDC Cashback launch</span>
+      </div>
+      <div class="pressure-item">
+        <span class="pressure-tag partner">Adyen</span>
+        <span>Testing coordination delays across 3 projects (Disputes, KYB/KYC, Credit Card Payments)</span>
+      </div>
+      <div class="pressure-item">
+        <span class="pressure-tag partner">Global-e</span>
+        <span>Alignment on MM Adoption rollout strategy, UK/CA market decisions</span>
+      </div>
+      <div class="pressure-item">
+        <span class="pressure-tag process">Process</span>
+        <span>Teams should scope with eng, design, <em>and partners</em> before prototype. MM Adoption, USDC Cashback, and multiple Adyen projects lost weeks discovering partnership/compliance requirements mid-build that were knowable at kickoff.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<details class="cause-breakdown">
+  <summary><i class="fas fa-chart-pie"></i> Slip Cause Breakdown</summary>
+  <div class="insights-grid" id="insights-grid">
+    <!-- Populated by JS -->
+  </div>
+</details>
+
+<div id="filter-bar">
+  <input id="search-input" type="text" placeholder="Search projects…">
+  <div class="filter-sep"></div>
+  <select id="filter-team"><option value="">All teams</option></select>
+  <select id="filter-phase"><option value="">All phases</option></select>
+  <select id="filter-milestone"><option value="">All milestones</option></select>
+  <button id="clear-btn">Clear</button>
+  <span id="row-count"></span>
+</div>
+
+<div id="table-wrap">
+  <div class="empty-state"><span class="loading-spinner"></span> Loading data…</div>
+</div>
+</div>
+
+</div>
+
+<script>
+let allChanges = [];
+let filters = { search: '', team: '', phase: '', milestone: '' };
+let sortCol = 'daysChanged', sortDir = -1; // Sort by most days slipped first
+
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n');
+  const result = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const row = [];
+    let inQuotes = false;
+    let current = '';
+    
+    for (let j = 0; j < lines[i].length; j++) {
+      const char = lines[i][j];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        row.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    row.push(current.trim());
+    result.push(row);
+  }
+  
+  return result;
+}
+
+function parseChanges(rows) {
+  if (!rows || rows.length < 2) return [];
+  
+  // Skip header row
+  return rows.slice(1).map((row, idx) => {
+    const daysStr = (row[6] || '').replace(/[+"]/g, '').trim();
+    const days = parseInt(daysStr) || 0;
+    
+    return {
+      id: idx + 1,
+      team: row[0] || '',
+      project: row[1] || '',
+      phase: row[2] || '',
+      milestone: row[3] || '',
+      oldDate: row[4] || '',
+      newDate: row[5] || '',
+      daysChanged: days,
+      reason: row[7] || '',
+      champion: row[8] || ''
+    };
+  }).filter(c => c.project);
+}
+
+function getFiltered() {
+  let cs = allChanges.slice();
+  const q = filters.search.toLowerCase();
+  
+  if (q) cs = cs.filter(c => 
+    c.project.toLowerCase().includes(q) || 
+    c.champion.toLowerCase().includes(q) ||
+    c.reason.toLowerCase().includes(q) ||
+    c.team.toLowerCase().includes(q)
+  );
+  if (filters.team) cs = cs.filter(c => c.team === filters.team);
+  if (filters.phase) cs = cs.filter(c => c.phase === filters.phase);
+  if (filters.milestone) cs = cs.filter(c => c.milestone === filters.milestone);
+
+  cs.sort((a, b) => {
+    let va, vb;
+    if (sortCol === 'daysChanged') { va = a.daysChanged; vb = b.daysChanged; return (va - vb) * sortDir; }
+    if (sortCol === 'project') { va = a.project; vb = b.project; }
+    else if (sortCol === 'team') { va = a.team; vb = b.team; }
+    else if (sortCol === 'phase') { va = a.phase; vb = b.phase; }
+    else if (sortCol === 'champion') { va = a.champion; vb = b.champion; }
+    else { va = a.project; vb = b.project; }
+    return (va || '').localeCompare(vb || '') * sortDir;
+  });
+
+  return cs;
+}
+
+function buildFilterOptions() {
+  const teams = [...new Set(allChanges.map(c => c.team).filter(Boolean))].sort();
+  const phases = [...new Set(allChanges.map(c => c.phase).filter(Boolean))].sort();
+  const milestones = [...new Set(allChanges.map(c => c.milestone).filter(Boolean))].sort();
+
+  [
+    ['filter-team', teams, 'All teams'],
+    ['filter-phase', phases, 'All phases'],
+    ['filter-milestone', milestones, 'All milestones'],
+  ].forEach(([id, vals, placeholder]) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">${placeholder}</option>`;
+    vals.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = v;
+      sel.appendChild(o);
+    });
+    sel.value = cur;
+  });
+}
+
+function updateSummaryCards() {
+  const total = allChanges.length;
+  
+  // Calculate average slip for GA milestones only
+  const gaChanges = allChanges.filter(c => {
+    const m = (c.milestone || '').toLowerCase();
+    return m === 'general availability';
+  });
+  
+  const avgSlip = gaChanges.length > 0 
+    ? Math.round(gaChanges.reduce((sum, c) => sum + c.daysChanged, 0) / gaChanges.length)
+    : 0;
+  
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('slip-count').textContent = '+' + avgSlip + ' days';
+  
+  // Analyze causes
+  analyzeSlipCauses();
+}
+
+function analyzeSlipCauses() {
+  const categories = {
+    partner: {
+      name: 'Partner / External Dependencies',
+      class: 'partner',
+      keywords: ['partner', 'adyen', 'global-e', 'globale', 'coinbase', 'networks', 'contracts', 'amendment', 'legal'],
+      changes: [],
+      description: 'Delays waiting on external partners, legal approvals, or third-party dependencies'
+    },
+    technical: {
+      name: 'Technical Issues / Bugs',
+      class: 'technical', 
+      keywords: ['bug', 'issues', 'merge queue', 'incident', 'data issues', 'kafka', 'validation', 'deploy issues'],
+      changes: [],
+      description: 'Bugs discovered during testing, infrastructure issues, or data problems'
+    },
+    scope: {
+      name: 'Scope / Planning Changes',
+      class: 'scope',
+      keywords: ['did not include', 'unpausing', 'resuming', 'updating to reflect', 'revising', 'estimate'],
+      changes: [],
+      description: 'Original estimates missed work, scope expanded, or project restarted'
+    },
+    alignment: {
+      name: 'Cross-team Alignment',
+      class: 'alignment',
+      keywords: ['alignment', 'several teams', 'aligning with', 'tech design', 'consultation', 'reviews'],
+      changes: [],
+      description: 'Coordination needed across multiple teams or design reviews'
+    },
+    rollout: {
+      name: 'Rollout / Release Strategy',
+      class: 'rollout',
+      keywords: ['rollout', 'progressive', 'incremental', 'release request', 'launch strategy', 'tranche'],
+      changes: [],
+      description: 'Phased rollout taking longer or release strategy changes'
+    }
+  };
+
+  // Categorize each change
+  allChanges.forEach(c => {
+    const reason = (c.reason || '').toLowerCase();
+    let matched = false;
+    
+    for (const [key, cat] of Object.entries(categories)) {
+      if (cat.keywords.some(kw => reason.includes(kw))) {
+        cat.changes.push(c);
+        matched = true;
+        break;
+      }
+    }
+  });
+
+  // Sort by total days slipped
+  const sortedCategories = Object.entries(categories)
+    .map(([key, cat]) => ({
+      ...cat,
+      key,
+      totalDays: cat.changes.reduce((sum, c) => sum + c.daysChanged, 0)
+    }))
+    .filter(cat => cat.changes.length > 0)
+    .sort((a, b) => b.totalDays - a.totalDays);
+
+  // Render insights
+  const grid = document.getElementById('insights-grid');
+  grid.innerHTML = sortedCategories.map(cat => {
+    const examples = cat.changes.slice(0, 3).map(c => c.project);
+    return `
+      <div class="insight-card ${cat.class}">
+        <div class="insight-card-header">
+          <h4>${cat.name}</h4>
+          <span class="count">${cat.changes.length}</span>
+        </div>
+        <span class="days">+${cat.totalDays} days total slip</span>
+        <p>${cat.description}</p>
+        <div class="insight-examples">
+          ${examples.map(e => `<span>${e.substring(0, 30)}${e.length > 30 ? '…' : ''}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getPhaseClass(phase) {
+  const p = (phase || '').toLowerCase();
+  if (p === 'prototype') return 'phase-prototype';
+  if (p === 'build') return 'phase-build';
+  if (p === 'release') return 'phase-release';
+  if (p === 'observe') return 'phase-observe';
+  return '';
+}
+
+function render() {
+  const wrap = document.getElementById('table-wrap');
+  const cs = getFiltered();
+  document.getElementById('row-count').textContent = `${cs.length} of ${allChanges.length}`;
+
+  if (!cs.length) {
+    wrap.innerHTML = '<div class="empty-state">No timeline changes match the current filters.</div>';
+    return;
+  }
+
+  const colDef = [
+    { key: 'team', label: 'Team', sort: true },
+    { key: 'project', label: 'Project', sort: true },
+    { key: 'phase', label: 'Phase', sort: true },
+    { key: 'milestone', label: 'Milestone', sort: false },
+    { key: 'dates', label: 'Date Change', sort: false },
+    { key: 'daysChanged', label: 'Days', sort: true },
+    { key: 'reason', label: 'Reason', sort: false },
+    { key: 'champion', label: 'Champion', sort: true },
+  ];
+
+  const thead = `<thead><tr>${colDef.map(c =>
+    `<th data-col="${c.key}" ${sortCol === c.key ? 'class="sorted"' : ''}>
+      ${c.label}${c.sort ? `<span class="sort-arrow">${sortCol === c.key ? (sortDir === 1 ? '▲' : '▼') : '▲'}</span>` : ''}
+    </th>`
+  ).join('')}</tr></thead>`;
+
+  const rows = cs.map(c => {
+    const phaseClass = getPhaseClass(c.phase);
+    const daysClass = c.daysChanged > 0 ? 'days-positive' : 'days-negative';
+    const daysDisplay = c.daysChanged > 0 ? '+' + c.daysChanged : c.daysChanged;
+    
+    return `<tr>
+      <td><span class="team-badge">${c.team}</span></td>
+      <td style="max-width: 250px;"><strong>${c.project}</strong></td>
+      <td><span class="phase-badge ${phaseClass}">${c.phase}</span></td>
+      <td><span class="milestone-badge">${c.milestone}</span></td>
+      <td>
+        <div class="date-change">
+          <span class="date-old">${c.oldDate}</span>
+          <span class="date-arrow">→</span>
+          <span class="date-new">${c.newDate}</span>
+        </div>
+      </td>
+      <td><span class="days-badge ${daysClass}">${daysDisplay}</span></td>
+      <td class="reason-cell truncated" title="${c.reason.replace(/"/g, '&quot;')}">${c.reason || '—'}</td>
+      <td class="muted-cell">${c.champion || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table>${thead}<tbody>${rows}</tbody></table>`;
+
+  wrap.querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortCol === col) sortDir *= -1;
+      else { sortCol = col; sortDir = col === 'daysChanged' ? -1 : 1; }
+      render();
+    });
+  });
+}
+
+// Filter events
+document.getElementById('search-input').addEventListener('input', e => {
+  filters.search = e.target.value.trim(); render();
+});
+[
+  ['filter-team', 'team'],
+  ['filter-phase', 'phase'],
+  ['filter-milestone', 'milestone'],
+].forEach(([id, key]) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', e => {
+    filters[key] = e.target.value; render();
+  });
+});
+document.getElementById('clear-btn').addEventListener('click', () => {
+  filters = { search: '', team: '', phase: '', milestone: '' };
+  document.getElementById('search-input').value = '';
+  ['filter-team', 'filter-phase', 'filter-milestone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  render();
+});
+
+document.getElementById('refresh-btn').addEventListener('click', loadData);
+
+async function loadData() {
+  const wrap = document.getElementById('table-wrap');
+  wrap.innerHTML = '<div class="empty-state"><span class="loading-spinner"></span> Loading data…</div>';
+  
+  try {
+    const response = await fetch('data/slip.csv');
+    if (!response.ok) throw new Error('Failed to load data');
+    const csv = await response.text();
+    const rows = parseCSV(csv);
+    allChanges = parseChanges(rows);
+    buildFilterOptions();
+    updateSummaryCards();
+    render();
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty-state">Failed to load data: ${e.message}<br><br>
+      <small>Make sure data/slip.csv exists.</small></div>`;
+    console.error(e);
+  }
+}
+
+// Dark mode toggle
+(function() {
+  const toggle = document.getElementById('darkModeToggle');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+
+  function updateDarkIcon() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const icon = toggle ? toggle.querySelector('i') : null;
+    if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+  }
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('pcb-theme', next);
+      updateDarkIcon();
+    });
+    
+    const saved = localStorage.getItem('pcb-theme');
+    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', saved || sys);
+    updateDarkIcon();
+  }
+
+  if (sidebarToggle && sidebar) {
+    const saved = localStorage.getItem('pcb-sidebar-collapsed');
+    if (saved === '1') sidebar.classList.add('collapsed');
+
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      localStorage.setItem('pcb-sidebar-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+    });
+  }
+})();
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
