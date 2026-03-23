@@ -155,6 +155,8 @@
   .muted-cell { color: var(--text-muted); }
   .col-name { min-width: 220px; max-width: 320px; }
   .proj-name-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
+  .proj-name-cell a { color: var(--accent); text-decoration: none; }
+  .proj-name-cell a:hover { text-decoration: underline; }
   a.proj-link { color: var(--text-primary); text-decoration: none; }
   a.proj-link:hover { color: var(--accent-green); text-decoration: underline; }
 
@@ -490,11 +492,12 @@ let allProjects = [];
 let filters = { search: '', priority: '', half: '', team: '', subteam: '', bigrock: '', editions: '', tos: '', partner: '', status: '' };
 let sortCol = 'rank', sortDir = 1;
 
-function parseProjects(rows) {
+function parseProjects(rows, vaultUrls) {
   if (!rows || rows.length < 2) return [];
   const headers = rows[0];
   const colIndex = {};
   headers.forEach((h, i) => { colIndex[h.toLowerCase().trim()] = i; });
+  vaultUrls = vaultUrls || {};
 
   return rows.slice(1).map((row, idx) => {
     const get = (key) => {
@@ -513,6 +516,7 @@ function parseProjects(rows) {
       priority: get('priority'),
       bigRock: get('pcb big rock'),
       name: project,
+      vaultUrl: vaultUrls[project] || '',
       description: get('description'),
       team: get('team'),
       subTeam: get('sub team') || get('subteam'),
@@ -685,7 +689,7 @@ function render() {
       <td class="muted-cell">${p.rank !== 999 ? p.rank : '—'}</td>
       <td>${p.priority ? `<span class="priority-badge ${prioClass}">${p.priority}</span>` : '<span class="muted-cell">—</span>'}</td>
       <td class="col-name">
-        <div class="proj-name-cell" title="${p.name}">${p.name}</div>
+        <div class="proj-name-cell" title="${p.name}">${p.vaultUrl ? `<a href="${p.vaultUrl}" target="_blank" rel="noopener">${p.name}</a>` : p.name}</div>
         ${p.bigRock && p.bigRock !== 'N/A' ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${p.bigRock}</div>` : ''}
       </td>
       <td><span class="team-badge">${p.team || '—'}</span></td>
@@ -753,7 +757,7 @@ async function loadData() {
     const response = await fetch('data/projects.json');
     if (!response.ok) throw new Error('Failed to load data');
     const data = await response.json();
-    allProjects = parseProjects(data.rows);
+    allProjects = parseProjects(data.rows, data.vaultUrls || {});
     buildFilterOptions();
     render();
   } catch (e) {

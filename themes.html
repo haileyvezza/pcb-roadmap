@@ -237,6 +237,8 @@
     min-width: 0;
   }
 
+  .project-name a { color: var(--accent); text-decoration: none; }
+  .project-name a:hover { text-decoration: underline; }
   .project-name {
     font-size: 14px;
     font-weight: 600;
@@ -402,11 +404,12 @@ const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, P4: 4 };
 
 let allProjects = [];
 
-function parseProjects(rows) {
+function parseProjects(rows, vaultUrls) {
   if (!rows || rows.length < 2) return [];
   const headers = rows[0];
   const colIndex = {};
   headers.forEach((h, i) => { colIndex[h.toLowerCase().trim()] = i; });
+  vaultUrls = vaultUrls || {};
 
   return rows.slice(1).map((row, idx) => {
     const get = (key) => {
@@ -422,6 +425,7 @@ function parseProjects(rows) {
       theme: get('pcb theme'),
       priority: get('priority'),
       name: project,
+      vaultUrl: vaultUrls[project] || '',
       description: get('description'),
       team: get('sub team') || get('subteam'),
       champion: get('champion'),
@@ -506,7 +510,7 @@ function render() {
           ${p.priority ? `<span class="priority-badge ${prioClass}">${p.priority}</span>` : ''}
         </div>
         <div class="project-info">
-          <div class="project-name">${p.name}</div>
+          <div class="project-name">${p.vaultUrl ? `<a href="${p.vaultUrl}" target="_blank" rel="noopener">${p.name}</a>` : p.name}</div>
           ${p.description ? `<div class="project-desc">${p.description}</div>` : ''}
           <div class="project-meta">
             ${p.champion ? `<div class="meta-item"><i class="fas fa-user"></i> ${p.champion}</div>` : ''}
@@ -533,7 +537,7 @@ async function loadData() {
     const response = await fetch('data/projects.json');
     if (!response.ok) throw new Error('Failed to load data');
     const data = await response.json();
-    allProjects = parseProjects(data.rows);
+    allProjects = parseProjects(data.rows, data.vaultUrls || {});
     render();
   } catch (e) {
     content.innerHTML = `<div class="empty-state">Failed to load data: ${e.message}</div>`;

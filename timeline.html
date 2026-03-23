@@ -102,6 +102,8 @@
   .project-label { height: var(--row-h); display: flex; align-items: center; padding: 0 8px 0 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s; gap: 6px; min-width: 0; }
   .project-label:hover { background: rgba(0,0,0,.04); }
   .project-name { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .project-name a, .tt-name a { color: var(--accent); text-decoration: none; }
+  .project-name a:hover, .tt-name a:hover { text-decoration: underline; }
   .priority-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
   .project-bar-row { height: var(--row-h); position: relative; border-bottom: 1px solid var(--border); transition: background .1s; }
@@ -380,7 +382,7 @@ function render() {
       label.className = 'project-label';
       label.innerHTML = `
         <div class="priority-dot" style="background:${prioColor}"></div>
-        <div class="project-name" title="${p.name}">${p.name}</div>
+        <div class="project-name" title="${p.name}">${p.vaultUrl ? `<a href="${p.vaultUrl}" target="_blank" rel="noopener">${p.name}</a>` : p.name}</div>
       `;
       labelsCol.appendChild(label);
 
@@ -441,7 +443,7 @@ function showTooltip(e, p) {
   const edBadge = ed.includes('S26') ? '<span class="tt-badge" style="background:#8b5cf622;color:#8b5cf6">S26</span>' :
                   ed.includes('W27') ? '<span class="tt-badge" style="background:#0891b222;color:#0891b2">W27</span>' : '';
   tt.innerHTML = `
-    <div class="tt-name">${p.name}</div>
+    <div class="tt-name">${p.vaultUrl ? `<a href="${p.vaultUrl}" target="_blank" rel="noopener">${p.name}</a>` : p.name}</div>
     ${p.description ? `<div class="tt-desc">${p.description}</div>` : ''}
     <div class="tt-meta">
       <span class="tt-badge" style="background:${prioColor}22;color:${prioColor}">${p.priority || '—'}</span>
@@ -468,11 +470,12 @@ function hideTooltip() {
   document.getElementById('tooltip').classList.remove('visible');
 }
 
-function parseProjects(rows) {
+function parseProjects(rows, vaultUrls) {
   if (!rows || rows.length < 2) return [];
   const headers = rows[0];
   const colIndex = {};
   headers.forEach((h, i) => { colIndex[h.toLowerCase().trim()] = i; });
+  vaultUrls = vaultUrls || {};
 
   return rows.slice(1).map((row, idx) => {
     const get = (key) => {
@@ -484,6 +487,7 @@ function parseProjects(rows) {
     return {
       id: idx + 1,
       name,
+      vaultUrl: vaultUrls[name] || '',
       description: get('description'),
       team: get('team'),
       subTeam: get('sub team') || get('subteam'),
@@ -518,7 +522,7 @@ async function loadData() {
   try {
     const response = await fetch('data/projects.json');
     const data = await response.json();
-    allProjects = parseProjects(data.rows);
+    allProjects = parseProjects(data.rows, data.vaultUrls || {});
     buildTeamFilter();
     renderWindowLabel();
     renderMonths();
