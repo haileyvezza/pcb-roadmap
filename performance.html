@@ -727,6 +727,14 @@ async function loadData() {
   }
 })();
 
+// Hide sidebar when embedded in an iframe (e.g. PCB Hub)
+if (window !== window.top) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.style.display = 'none';
+  });
+}
+
 document.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
