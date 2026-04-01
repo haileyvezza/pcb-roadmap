@@ -673,8 +673,8 @@ async function loadData() {
   }
 })();
 
-// Hide sidebar when embedded in an iframe (e.g. PCB Hub)
-if (window !== window.top) {
+// Hide sidebar when embedded (e.g. PCB Hub loads with ?embed=1)
+if (new URLSearchParams(window.location.search).has('embed')) {
   document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.style.display = 'none';
