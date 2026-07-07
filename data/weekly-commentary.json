@@ -1,0 +1,431 @@
+{
+  "reportDate": "06/29–07/06",
+  "stuckInPrototype": [
+    {
+      "project": "Managed Markets: Add shipping costs to managed pricing",
+      "team": "XB",
+      "priority": "P1",
+      "weeks": "4w",
+      "why": "Michelle Wu — Prototype; End Date +29d (Jul 16 → Aug 14) after staffing cut for 3 weeks to fund regulatory changes. Design-heavy week focused on simplifying settings modal after stakeholder feedback; usability study built and ready to ship.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/51203"
+    },
+    {
+      "project": "First Managed Markets Order Hold: Default-on at scale",
+      "team": "XB",
+      "priority": "P2",
+      "weeks": "5w",
+      "why": "Rebecca Samos Sanchez — Prototype; GA +15d (Jul 2 → Jul 17), End +33d (Jun 28 → Jul 31). Design decisions aligned (Adaptive Pricing ON for first order); money movement architecture designed; default-on experiment rolled back to 0%.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/51204"
+    },
+    {
+      "project": "Money Movement Citi Bank Integration",
+      "team": "MM",
+      "priority": "P2",
+      "weeks": "8w",
+      "why": "Bilal Alp — Prototype; End Date +85d (Jul 2 → Sep 25). Connected to Banking Circle API; created payment flow POC; Citi authentication progress with PRs pending; created valid ACH request on Citi production; payment status API and ACH code near completion. Webhook review, ledger reorg continuation, and test finalization next.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/51235"
+    },
+    {
+      "project": "Launch Alipay and WeChat Pay as Shopify Payments LPMs",
+      "team": "PP&R",
+      "priority": "P2",
+      "weeks": "6w",
+      "why": "Andy Di — Prototype; EA +8d, GA +92d (Jul 15 → Oct 15), End +85d. Alipay rollout paced to respect Stripe's 450/week onboarding limit; WeChat Pay GA gated on Stripe's 'WeChat H5' onboarding API (not ready until late September). Splitting delivery into two tracks with Alipay targeting Jul 31 and WeChat mid-October.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/51253"
+    },
+    {
+      "project": "Truemed integration with Shop Pay",
+      "team": "Shop Wallet",
+      "priority": "P2",
+      "weeks": "2w",
+      "why": "Ben Rajabi — Prototype; End Date +14d. Pivoted to deeper Truemed integration in Core; HSA/FSA fields added to ShopPayWalletConfig; tech design doc nearly complete; feature flag live; syncs revealed higher mixed cart eligibility than expected. Launch scope excludes mixed eligible/ineligible carts.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/51231"
+    }
+  ],
+  "extendedBuild": [
+    {
+      "project": "Shop Pay Network Tokenization",
+      "team": "PP&R",
+      "priority": "P1",
+      "weeks": "10w+",
+      "why": "Nick Jones — Build; Internal +57d (May 21 → Jul 17), LR +57d (Jun 4 → Jul 31), End +157d (Apr 28 → Oct 2). VGS contract still not signed. CAU performance baselining completed — Stripe real-time CAU reliance higher than expected; release phase delayed to prioritize CAU measurement and improve documentation. Instrument sync consumer in dry-run mode; resilience testing for Shop Pay fallback added.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/49532"
+    },
+    {
+      "project": "Automated retraining pipeline for buyer risk ML models",
+      "team": "PP&R",
+      "priority": "P2",
+      "weeks": "7w",
+      "why": "Nate George — Build; End Date +75d (May 17 → Jul 31). Core schedules live and key retrain/selector/PR-writer schedules deployed. AT RISK — PR reviews, alerting, and shadow/evaluator evidence still needed before Jul 17 release target. Capacity constraints.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/50436"
+    },
+    {
+      "project": "Sequential NITS classifier",
+      "team": "PP&R",
+      "priority": "P2",
+      "weeks": "17w",
+      "why": "Breno Freitas — Build; LR +98d (Apr 7 → Jul 14), End +149d. Re-anchored exit criteria after baseline drift discovery; challenger model clears updated bar. Davies migration completed, unblocking remote training; team aligned on SP $PRAUC as key metric; catalog embeddings backfilling underway.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/49630"
+    },
+    {
+      "project": "Payments API internal refactor",
+      "team": "PP&R",
+      "priority": "P2",
+      "weeks": "13w",
+      "why": "Owen Linton — Build; GA +26d (Jun 12 → Jul 8), End +127d. Resume Payment Pipeline reached 100% on Staff and 10% GA; last changes in flight; final rollouts completing this week.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/48761"
+    },
+    {
+      "project": "Migrate Core Payment Methods to Global Vault",
+      "team": "PP&R",
+      "priority": "P2",
+      "weeks": "10w",
+      "why": "Harry Venables — Release; LR +105d (Jan 12 → Apr 27), GA +168d (Jan 30 → Jul 17). Completed GV direct-write cutover stack; six flags reached 100%; GV read flags resumed rollout; critical infra gap and race condition fixed. Dev-complete this week; 2-week rollout to follow.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/48371"
+    },
+    {
+      "project": "PAP-CLE Sync Removal",
+      "team": "PE",
+      "priority": "P1",
+      "weeks": "11w",
+      "why": "Shawn Shellenbarger — Build; End Date +31d (Jul 15 → Aug 15). Critical cross-org security/PII issue discovered and investigation opened. Data mismatches reduced from ~28k to ~17k; Cohort 4 backfill completed; strong Abacus Milestone 3c progress with 17 PRs merged. Two devs pulled to support Neobank and Stablecoin.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/50269"
+    },
+    {
+      "project": "Integrate US Shopify Payments Onboarding with Policies and Completeness",
+      "team": "PE",
+      "priority": "P1",
+      "weeks": "8w",
+      "why": "Ahmad Dandachi — Build; LR +38d (Jun 2 → Jul 10), End +69d (May 16 → Jul 24). Resolved 15 of 22 P0 blockers; shipped PO Box restriction policy end-to-end; merged critical bug fixes; 7 P0s remain outstanding heading into Jul 6 launch target week.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/50379"
+    }
+  ],
+  "stalledP1s": [
+    {
+      "project": "Integrate US Shopify Payments Onboarding with Policies and Completeness",
+      "team": "PE",
+      "priority": "P1",
+      "reason": "AT RISK. As of Jun 30, 6 of 22 P0 blocking issues remain in progress and 1 has not been started (revised to 7 outstanding after latest update). Team resolved 4 P0s in a single day; remaining items include coordination dependencies. PO Box restriction policy shipped, unblocking PayPal dependency. Country expansion (M2.1) missed end-of-June. Jul 6 US rollout target at risk; team targeting Jul 7 resolution before US flight.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/50379",
+      "stoppedDate": "2026-06-30",
+      "phase": "At Risk"
+    },
+    {
+      "project": "Automated retraining pipeline for buyer risk ML models",
+      "team": "PP&R",
+      "priority": "P2",
+      "reason": "AT RISK. Release gated on outstanding fix PRs being reviewed, post-merge evidence generation for all models, materialized selector metrics, PagerDuty-backed alerting, and shadow/evaluator evidence — none complete. Blockers listed as capacity + other; volume of release-readiness gates significant. Needs additional review capacity or scoped decision on which evidence gates are strictly required for release.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/50436",
+      "stoppedDate": "2026-06-25",
+      "phase": "At Risk"
+    },
+    {
+      "project": "Optimize payment authorization rate through model driven transaction routing",
+      "team": "PP&R",
+      "priority": "P1",
+      "reason": "AT RISK. Delivering +18.6 bps auth lift in the key decline score band (0.02–0.85), translating to ~1,860 extra authorizations per 1M attempts. Planning 99% treatment ramp after US holiday weekend. Amex identified as only card brand showing negative results — excluded from launch while ML engineering investigates underperformance. Observability PRs and alert tuning in progress despite bot traffic surge. Needs timeline for Amex re-inclusion.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/49388",
+      "stoppedDate": "2026-06-22",
+      "phase": "At Risk"
+    },
+    {
+      "project": "Shop Pay Network Tokenization",
+      "team": "PP&R",
+      "priority": "P1",
+      "reason": "AT RISK. VGS contract still not signed. CAU performance baselining completed — Stripe real-time CAU reliance higher than expected; release phase delayed to prioritize CAU measurement and improve documentation. Multi-provider architectural changes made. Instrument sync consumer in dry-run mode; resilience testing for Shop Pay fallback added.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/49532",
+      "stoppedDate": "2026-06-24",
+      "phase": "At Risk"
+    },
+    {
+      "project": "Cross Border Transactions (CBT) for Shop Pay Installments",
+      "team": "Shop Wallet",
+      "priority": "P1",
+      "reason": "PAUSED. Coordination blocker preventing progress on enabling Shop Pay Installments for cross-border US/UK/CA purchases. No strategic review scheduled.",
+      "vault_url": "https://vault.shopify.io/gsd/projects/50588",
+      "stoppedDate": "2026-05-14",
+      "phase": "Paused"
+    }
+  ],
+  "shipped": [
+    {
+      "project": "Establish Shopify-wide centralized ledger using TigerBeetle",
+      "team": "Ledger",
+      "note": "shopify_ledger 2.0.0 released as the first major stable version, aligned with the Jun 30 production cutover. Operator corrections tooling, Prometheus-native observability, and pre-prod reconciliation pipeline all hardened."
+    },
+    {
+      "project": "Plus ToS rollout",
+      "team": "PE",
+      "note": "Final PRs merged and confirmed deployed to production on Jun 29, unblocking Plus merchants to use payment provider flexibility."
+    },
+    {
+      "project": "PO Box restriction policy",
+      "team": "PE",
+      "note": "Shipped end-to-end as part of US Shopify Payments onboarding integration; unblocks a PayPal dependency."
+    },
+    {
+      "project": "Chargeback rate policy enforcement",
+      "team": "PE",
+      "note": "Policy fully enforced at 100% across the merchant base."
+    },
+    {
+      "project": "Role-based access control for managing payments",
+      "team": "PE",
+      "note": "Exceeded 30,000 adoption goal — 31,023 shops using new permissions. Move-to-Done review submitted and awaiting approval. AppSec flagged SEV-2 permission gap in Disputes read paths, being addressed."
+    },
+    {
+      "project": "DABL Credit Risk ML Model — feature rollout",
+      "team": "PP&R",
+      "note": "All new features and loss function weighting in production. Confident model maintains or improves precision at operating thresholds. Shipping next week."
+    },
+    {
+      "project": "Migrate Stripe Connect accounts off legacy_payments — Cohort progress",
+      "team": "PP&R",
+      "note": "Completed New Zealand migration; migrated 1M US merchants at target rate. DE cohort done, unblocking EU ORR. No issues or remediation spikes."
+    },
+    {
+      "project": "Payout Reconciliation Report — flag ramp",
+      "team": "PP&R",
+      "note": "Feature flag rollout from 1% → 10% with plan to reach 100% by next week; staging pipeline issues resolved. Merchant demand growing."
+    },
+    {
+      "project": "Managed Markets UK & Canada — post-GA stabilization",
+      "team": "XB",
+      "note": "Feature flags cleaned up; critical order-edit tax bug fixed; UK promo fee cleanup executed. Business name override targeting next week. EU/APAC expansion deprioritized until 2027."
+    }
+  ],
+  "flags": [
+    "1. Automated retraining pipeline — review capacity is the blocker, not tech",
+    "TLDR: Team explicitly flags timeline risk: release gated on outstanding fix PRs being reviewed, post-merge evidence generation for all models, materialized selector metrics, PagerDuty-backed alerting, and shadow/evaluator evidence. Blockers labeled capacity + other.",
+    "Question: Assess review capacity — identify who needs to conduct the reviews and whether additional reviewer time can be allocated this sprint. Alternatively, make a scoped decision on which evidence gates are strictly required for release.",
+    "2. US Payments Onboarding — 7 P0s remain heading into launch week",
+    "TLDR: 15 of 22 P0s resolved; 7 outstanding including coordination dependencies. Team targeting Jul 7 resolution before US flight. PCLT review gates rollout.",
+    "Question: Continue daily focus and assign a clear owner for the 1 not-started P0.",
+    "3. Payment routing — Amex re-inclusion timeline",
+    "TLDR: Amex has been identified as the only card brand showing negative results from the ML routing model and has been excluded from launch. ML engineering team investigating underperformance. Amex volume will not benefit from auth rate improvements until root cause resolved.",
+    "Question: Get a committed date from the ML engineering team on Amex re-inclusion so the gap in coverage is time-bounded and doesn't become an indefinite carve-out at launch.",
+    "4. Shop Pay Network Tokenization — VGS contract still unsigned",
+    "TLDR: Release phase entry gated on VGS contract signature; CAU performance baselining completed but Stripe real-time CAU reliance higher than expected. Multi-provider architectural changes made.",
+    "Question: Escalate VGS contract signature to close the release-phase-entry blocker."
+  ],
+  "overdueReviews": [],
+  "coverageGaps": {
+    "thinSubTeams": [
+      {
+        "subTeam": "INFORM Compliance / KYB",
+        "pillar": "PE",
+        "activeProjects": 1,
+        "note": "Enable partners to offload INFORM compliance — zero engineering staffing persists as a critical concern. Release review pending 21 days. Exec-level decision needed to restore resources or formally stop the project."
+      },
+      {
+        "subTeam": "PAP-CLE Sync Removal",
+        "pillar": "PE",
+        "activeProjects": 1,
+        "note": "Two devs pulled to support Neobank and Stripe Stablecoin initiatives, introducing delay. Sync-remove touches many components; data schema changes and migrations require more time."
+      },
+      {
+        "subTeam": "Automated Retraining Pipeline / ML Ops",
+        "pillar": "PP&R",
+        "activeProjects": 1,
+        "note": "Capacity constrained. PR reviews, PagerDuty alerting, and shadow/evaluator evidence work all in flight. Recurring flag."
+      },
+      {
+        "subTeam": "US Onboarding / Trust Battery",
+        "pillar": "PE",
+        "activeProjects": 1,
+        "note": "Coordination dependencies across Entities, Payments, Trust Battery slowing resolution of remaining 7 P0 blockers."
+      },
+      {
+        "subTeam": "3P REST PayPal (BNPL)",
+        "pillar": "PP&R",
+        "activeProjects": 1,
+        "note": "Key developer on intermission through Jul 10; ownership gap remains. Sandbox testing initiated. BNPL fix targeting next week + buffer for done."
+      }
+    ],
+    "unassignedPeople": {
+      "generated": "2026-07-07",
+      "source": "PCB roster (Vault team 1722) minus anyone listed as Champion, Aimer, or Contributor on any active roadmap project. Filtered to ICs (Engineers + PMs); excludes Directors, Managers, Designers, Data Scientists/Engineers, Interns/Apprentices, PCB SLT, Hailey, Sofia, and Anita.",
+      "rosterSize": 300,
+      "activeProjectsScanned": 58,
+      "totalUnassigned": 103,
+      "byTeam": [
+        {
+          "team": "Payments Platform & Risk",
+          "count": 56,
+          "people": [
+            {"person": "Rose Wiegley", "role": "Principal Engineer"},
+            {"person": "Nick Smith", "role": "Senior Staff Engineer"},
+            {"person": "Simon Lacoursière", "role": "Senior Staff Engineer"},
+            {"person": "Addison James", "role": "Staff Engineer, Applied ML"},
+            {"person": "Alex Babinski", "role": "Staff ML Engineer"},
+            {"person": "Amit Moran", "role": "Staff Engineer"},
+            {"person": "Austen Novis", "role": "Staff Engineer"},
+            {"person": "Daisy Li", "role": "Staff Engineer, Applied ML"},
+            {"person": "Frédéric Boivin", "role": "Staff Engineer"},
+            {"person": "Giorgos Logiotatidis", "role": "Staff Engineer"},
+            {"person": "Marcelo Mottalli", "role": "Staff Engineer"},
+            {"person": "Michał Małecki", "role": "Staff Engineer"},
+            {"person": "Monika Parikh", "role": "Staff Engineer"},
+            {"person": "Nick Lam", "role": "Staff Developer"},
+            {"person": "Pierre Jambet", "role": "Staff Engineer"},
+            {"person": "Rahil Virani", "role": "Staff Engineer"},
+            {"person": "Adam Smith", "role": "Senior Developer"},
+            {"person": "Alex Comerford", "role": "Senior Engineer"},
+            {"person": "Alex Standke", "role": "Senior Engineer"},
+            {"person": "Andrea Smith", "role": "Senior Engineer"},
+            {"person": "André Ache", "role": "Senior ML Engineer"},
+            {"person": "Andy Di", "role": "Senior Engineer"},
+            {"person": "Bony Roopchandani", "role": "Senior Engineer"},
+            {"person": "Chad Ellis", "role": "Senior Engineer"},
+            {"person": "Chris Johnson", "role": "Senior Engineer"},
+            {"person": "Elaheh Jalalpour", "role": "Senior Engineer"},
+            {"person": "Eli Parker", "role": "Senior Engineer"},
+            {"person": "Emily Craig", "role": "Senior Frontend Developer"},
+            {"person": "Francesco Ferazzoli", "role": "Senior Engineer"},
+            {"person": "Gabriel Magill", "role": "Senior Engineer, Applied ML"},
+            {"person": "Jenny Shih", "role": "Senior Engineer"},
+            {"person": "Jiayi Xie", "role": "Senior ML Engineer"},
+            {"person": "Joe Novak", "role": "Senior Engineer"},
+            {"person": "Jonathan Chan", "role": "Senior Developer"},
+            {"person": "Justin Lang", "role": "Senior Developer"},
+            {"person": "Leena Nguyen", "role": "Senior Engineer"},
+            {"person": "Lukas Klizas", "role": "Senior Engineer"},
+            {"person": "Mahtab Dhaliwal", "role": "Senior Engineer, Applied ML"},
+            {"person": "Matt Korostoff", "role": "Senior Engineer"},
+            {"person": "Matthew Gingerich", "role": "Senior Developer"},
+            {"person": "Minghao Gu", "role": "Senior Engineer, Applied ML"},
+            {"person": "Nadia Kostiv", "role": "Senior Engineer"},
+            {"person": "Nate George", "role": "Senior Engineer"},
+            {"person": "Nidhi Patel", "role": "Senior Engineer, Applied ML"},
+            {"person": "Nuno Silva", "role": "Senior Developer"},
+            {"person": "Rohini Palliyali", "role": "Senior Engineer"},
+            {"person": "Sharad Jain", "role": "Senior Engineer"},
+            {"person": "Shireen Koul", "role": "Senior Engineer"},
+            {"person": "Steve Korber", "role": "Senior Engineer"},
+            {"person": "Steven Bapaga", "role": "Senior Engineer"},
+            {"person": "Alex Almeida", "role": "Engineer"},
+            {"person": "Anas Shahid", "role": "Software Engineer"},
+            {"person": "Arpit Kumar", "role": "Engineer"},
+            {"person": "Aviral Bhardwaj", "role": "Engineer"},
+            {"person": "Dylan Garner", "role": "Engineer, Applied ML"},
+            {"person": "Jan Dohring", "role": "Engineer"}
+          ]
+        },
+        {
+          "team": "Shop Wallet",
+          "count": 20,
+          "people": [
+            {"person": "Artur Spirke", "role": "Staff Engineer"},
+            {"person": "Eduardo Jolo", "role": "Staff Developer"},
+            {"person": "Jamie Ly", "role": "Staff Engineer"},
+            {"person": "Leandro Oriente", "role": "Staff Developer"},
+            {"person": "Alex Henkemeier", "role": "Senior Engineer"},
+            {"person": "Anu Lind", "role": "Senior Engineer"},
+            {"person": "Barry Simunovic", "role": "Senior Engineer"},
+            {"person": "Cindy Li", "role": "Senior Developer"},
+            {"person": "Jake Chambers", "role": "Senior Engineer"},
+            {"person": "Jorge Quan", "role": "Senior Developer"},
+            {"person": "June Ha", "role": "Senior Engineer"},
+            {"person": "Layne Koftinow-Mikan", "role": "Senior Engineer"},
+            {"person": "Prescillia Arnould", "role": "Senior Developer"},
+            {"person": "Sam Jenkins", "role": "Senior Developer"},
+            {"person": "Stefano Pace", "role": "Senior Engineer"},
+            {"person": "Andrew Verbovsky", "role": "Engineer"},
+            {"person": "Callum Kipin", "role": "Engineer"},
+            {"person": "Ilyes Chikh", "role": "Engineer"},
+            {"person": "Joseph Paul", "role": "Engineer"},
+            {"person": "Taylor Mitchell", "role": "Software Engineer"}
+          ]
+        },
+        {
+          "team": "Payments Experience",
+          "count": 10,
+          "people": [
+            {"person": "Dan Mendes", "role": "Senior Staff Product Manager"},
+            {"person": "Brian Chen", "role": "Staff Engineer"},
+            {"person": "David Espart", "role": "Staff Engineer"},
+            {"person": "Thomas Gwynne-Timothy", "role": "Staff Engineer"},
+            {"person": "Enotharani Theivapulendra", "role": "Senior Developer"},
+            {"person": "Erick Kad-Bay", "role": "Senior Engineer"},
+            {"person": "Marina Chirchikova", "role": "Senior Developer"},
+            {"person": "Nabeel Chaudhry", "role": "Senior Developer"},
+            {"person": "Ran Tao", "role": "Senior Developer"},
+            {"person": "Justin Law", "role": "Engineer"}
+          ]
+        },
+        {
+          "team": "Cross Border",
+          "count": 6,
+          "people": [
+            {"person": "Arya Akkus", "role": "Senior Engineer"},
+            {"person": "Ben Kovacs", "role": "Senior Engineer"},
+            {"person": "Joy Liu", "role": "Senior Developer"},
+            {"person": "Julie Huguet", "role": "Senior Engineer"},
+            {"person": "Keith Radford", "role": "Senior Engineer"},
+            {"person": "Kyle Chen", "role": "Engineer"}
+          ]
+        },
+        {
+          "team": "Money Movement",
+          "count": 5,
+          "people": [
+            {"person": "Natalie Bettenburg", "role": "Staff Developer"},
+            {"person": "Amanda Azevedo", "role": "Senior Engineer"},
+            {"person": "Manuel Ocaña", "role": "Senior Software Developer"},
+            {"person": "Muhammet Emre", "role": "Senior Developer"},
+            {"person": "Karen McCrann", "role": "Developer"}
+          ]
+        },
+        {
+          "team": "Ledger",
+          "count": 4,
+          "people": [
+            {"person": "Zaiyi Guo", "role": "Staff Engineer"},
+            {"person": "Kaleb Iswara", "role": "Senior Developer"},
+            {"person": "Meko Deng", "role": "Senior Engineer"},
+            {"person": "Tasya Aditya Rukmana", "role": "Senior Developer"}
+          ]
+        },
+        {
+          "team": "PCB Cross-functional",
+          "count": 2,
+          "people": [
+            {"person": "Mohamed Boukaa", "role": "Senior Staff Product Manager"},
+            {"person": "Victor Zhao", "role": "Engineer"}
+          ]
+        }
+      ]
+    }
+  },
+  "driftInsights": {
+    "working": [
+      "TigerBeetle 2.0.0 released; production cutover aligned to Jun 30; operator corrections, Prometheus observability, and pre-prod reconciliation pipeline all hardened.",
+      "Payment provider flexibility Plus ToS fully deployed Jun 29 unblocking Plus merchants.",
+      "Payment routing ML experiment delivering +18.6 bps auth lift in the key decline score band; ~1,860 extra authorizations per 1M attempts.",
+      "Chargeback rate policy fully enforced at 100% across the merchant base.",
+      "RBAC exceeded adoption goal — 31,023 shops using new permissions (30k target).",
+      "Stripe Connect legacy_payments migration: NZ complete, 1M US merchants migrated, DE cohort done — unblocks EU ORR.",
+      "Payout Reconciliation Report rolled out 1% → 10% with plan to reach 100% by next week."
+    ],
+    "notWorking": [
+      "Shop Pay Network Tokenization: VGS contract still not signed; End Date pushed +157d (Apr 28 → Oct 2), LR +57d, Internal +57d.",
+      "US Payments Onboarding: 7 P0s remain heading into Jul 6 launch week; LR +38d, End +69d. Late-stage bug hunts + exec review keep surfacing new blockers.",
+      "Global Vault Migration: GA +168d, End +163d — Shop Pay checkout flow complexity plus legacy service dependencies.",
+      "Sequential NITS classifier: LR +98d — non-SP shops added as training negatives made distribution materially harder; HC-constrained team.",
+      "Alipay & WeChat: GA +92d — Stripe onboarding rate limit + WeChat H5 API not ready until late September.",
+      "Payment authorization routing: Amex excluded from launch due to negative results; indefinite carve-out risk if not time-bounded.",
+      "PAP-CLE Sync Removal: End +31d — 2 devs pulled mid-project to Neobank + Stripe Stablecoin; a critical cross-org security/PII issue also surfaced.",
+      "Managed Markets shipping costs: End +29d — team cut for 3 weeks to fund regulatory changes; buffer gone before Jul 17 Build gate.",
+      "Automated retraining pipeline: End +75d — one engineer, capacity-constrained; missing evidence gates (PagerDuty alerting, shadow/evaluator runs, selector metrics) for Jul 17 release.",
+      "CBT for Shop Pay Installments: paused ~7 weeks with no strategic review scheduled and no page updates since May 14 — a P1 TAM expansion sitting idle."
+    ],
+    "pressure": [
+      "Assess review capacity for Automated retraining pipeline — team explicitly flags release gated on evidence review, not technical feasibility.",
+      "Get a committed date from ML engineering on Amex re-inclusion for payment authorization routing — time-bound the coverage gap.",
+      "Continue daily focus on US Payments Onboarding P0 resolution before Jul 7 target; assign owner for the 1 not-started P0.",
+      "Escalate VGS contract signature for Shop Pay Network Tokenization to close the release-phase-entry blocker.",
+      "Return the 2 devs pulled from PAP-CLE Sync Removal to Neobank/Stablecoin — or accept the +31d slip and downstream risk to those consumers.",
+      "Confirm resolution path for CBT for Shop Pay Installments — paused ~7 weeks with a coordination blocker and no owner or review scheduled; needs a strategic decision (unpause, re-scope, or formally stop)."
+    ]
+  }
+}

@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<script>(function(){var s=localStorage.getItem('pcb-theme'),d=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s||d);})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<script src="https://quickcomments.quick.shopify.io/quickcomments.min.js"></script>
+<title>Weekly Snapshot — PCB</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-primary:#f6f6f7;--bg-card:#fff;--bg-input:#f3f3f6;--bg-sidebar:#fff;
+  --border:rgba(0,0,0,.08);--border-hover:rgba(0,0,0,.14);
+  --text-primary:#1a1a1f;--text-secondary:#6b6b76;--text-muted:#9a9aa4;
+  --accent:#0088FF;--radius:12px;
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --sidebar-width:220px;--sidebar-collapsed:56px;
+  --shadow-card:0 1px 3px rgba(0,0,0,.06);--shadow-lg:0 8px 30px rgba(0,0,0,.08);
+  --red:#ef4444;--amber:#f59e0b;--green:#22c55e;--cyan:#06b6d4;--purple:#a855f7;--blue:#3b82f6;
+  --phase-planned:#94a3b8;--phase-off-vault:#d1d5db;--phase-prototype:#a855f7;
+  --phase-build:#f59e0b;--phase-observe:#06b6d4;--phase-release:#3b82f6;--phase-done:#6b7280;
+  --phase-stopped:#ef4444;
+}
+[data-theme="dark"]{
+  --bg-primary:#101114;--bg-card:#1a1c22;--bg-input:#24262d;--bg-sidebar:#1a1a1f;
+  --border:rgba(252,252,253,.08);--border-hover:rgba(252,252,253,.15);
+  --text-primary:#FCFCFD;--text-secondary:#9DA1AE;--text-muted:#676D7E;
+  --shadow-card:0 1px 4px rgba(0,0,0,.4);--shadow-lg:0 8px 30px rgba(0,0,0,.5);
+}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-sans);font-size:13px;height:100vh;display:flex;overflow:hidden}
+.app-layout{display:flex;height:100vh;overflow:hidden;width:100%}
+.sidebar{width:var(--sidebar-width);background:var(--bg-sidebar);display:flex;flex-direction:column;flex-shrink:0;transition:width .25s cubic-bezier(.4,0,.2,1);overflow-y:auto;overflow-x:hidden;z-index:100;border-right:1px solid var(--border)}
+.sidebar.collapsed{width:var(--sidebar-collapsed)}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-bottom:1px solid var(--border);min-height:56px;flex-shrink:0}
+.sidebar-brand{display:flex;align-items:center;gap:10px;overflow:hidden;white-space:nowrap}
+.sidebar-logo{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.sidebar-title{font-size:13px;font-weight:700;color:var(--text-primary);letter-spacing:-.01em;white-space:nowrap}
+.sidebar.collapsed .sidebar-title{opacity:0;width:0}
+.sidebar-toggle{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;border-radius:6px;transition:all .15s;flex-shrink:0;font-size:11px}
+.sidebar-toggle:hover{background:var(--bg-input);color:var(--text-primary)}
+.sidebar.collapsed .sidebar-header{justify-content:center;padding:16px 0}
+.sidebar.collapsed .sidebar-brand{display:none}
+.sidebar-nav{padding:10px 8px;display:flex;flex-direction:column;gap:2px;flex:1}
+.sidebar-bottom{padding:8px 8px 16px;display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--border);flex-shrink:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--text-secondary);transition:all .15s;white-space:nowrap;overflow:hidden;font-size:13px;font-weight:500;text-decoration:none;position:relative}
+.nav-item::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:0;border-radius:0 2px 2px 0;background:var(--accent);transition:height .2s}
+.nav-item:hover{background:var(--bg-input);color:var(--text-primary)}
+.nav-item:hover::before{height:14px}
+.nav-item.active{background:rgba(0,136,255,.08);color:var(--accent);font-weight:600}
+.nav-item.active::before{height:20px}
+.nav-item.parent-active{color:var(--text-primary)}
+.nav-item i{width:16px;text-align:center;flex-shrink:0;font-size:13px}
+.nav-label{transition:opacity .2s}
+.sidebar.collapsed .nav-label{opacity:0;width:0}
+.sidebar.collapsed .nav-item{justify-content:center;padding:9px;gap:0}
+.sidebar.collapsed .sidebar-nav,.sidebar.collapsed .sidebar-bottom{padding-left:0;padding-right:0;align-items:center}
+.nav-sub{display:flex;flex-direction:column;gap:1px;margin-top:1px}
+.nav-sub-item{display:flex;align-items:center;gap:8px;padding:7px 10px 7px 32px;border-radius:8px;cursor:pointer;color:var(--text-muted);font-size:12px;font-weight:500;text-decoration:none;transition:all .15s;white-space:nowrap;overflow:hidden}
+.nav-sub-item:hover{background:var(--bg-input);color:var(--text-primary)}
+.nav-sub-item.active{color:var(--accent);font-weight:600}
+.sidebar.collapsed .nav-sub{display:none}
+.nav-count{font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;background:var(--bg-input);color:var(--text-muted);margin-left:auto}
+
+.main-content{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-primary)}
+header{background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;flex-shrink:0;height:52px;gap:12px}
+.header-title{font-weight:700;font-size:15px}
+.header-sub{font-size:12px;color:var(--text-muted);background:var(--bg-input);padding:2px 8px;border-radius:10px}
+.content-wrap{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);transition:box-shadow .2s;overflow:hidden}
+.card:hover{box-shadow:var(--shadow-lg)}
+
+/* Perf bubble grid */
+.bubble-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.bubble{padding:20px;text-align:center;cursor:pointer;position:relative}
+.bubble-ring{margin:0 auto 10px}
+.bubble-icon{font-size:20px;margin-bottom:6px}
+.bubble-name{font-size:12px;font-weight:700;margin-bottom:2px;line-height:1.3}
+.bubble-count{font-size:11px;color:var(--text-muted);margin-bottom:8px}
+.bubble-expand{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:600;color:var(--accent);margin-top:8px;transition:all .15s}
+.bubble:hover .bubble-expand{color:var(--text-primary)}
+.bubble-body{display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px;text-align:left;max-height:500px;overflow-y:auto}
+.bubble.expanded .bubble-body{display:block}
+.bubble.expanded .bubble-expand i{transform:rotate(90deg)}
+.ring-wrap{position:relative}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--bg-input);stroke-width:5}
+.ring-fg{fill:none;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .5s ease}
+.ring-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;font-weight:800}
+.theme-card-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+
+/* Overall bar */
+.overall-bar{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:20px 24px}
+.overall-info{flex:1;min-width:0}
+.overall-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.overall-sub{font-size:12px;color:var(--text-muted)}
+.phase-bar{height:8px;border-radius:4px;display:flex;overflow:hidden;background:var(--bg-input)}
+.phase-seg{height:100%;min-width:0;transition:width .4s ease}
+.phase-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.phase-leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted)}
+.phase-dot{width:7px;height:7px;border-radius:2px}
+
+/* Side panel */
+.side-panel{position:fixed;top:0;right:0;bottom:0;width:50%;background:var(--bg-card);border-left:1px solid var(--border);box-shadow:-8px 0 30px rgba(0,0,0,.1);z-index:200;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.side-panel.open{transform:translateX(0)}
+.side-panel-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.side-panel-title{font-size:15px;font-weight:700;flex:1}
+.side-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:6px;border-radius:6px;transition:all .15s}
+.side-panel-close:hover{background:var(--bg-input);color:var(--text-primary)}
+.side-panel-body{flex:1;overflow-y:auto;padding:16px 20px}
+.side-panel-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.2);z-index:199;display:none}
+.side-panel-overlay.open{display:block}
+[data-theme="dark"] .side-panel{box-shadow:-8px 0 30px rgba(0,0,0,.4)}
+[data-theme="dark"] .side-panel-overlay.open{background:rgba(0,0,0,.5)}
+
+/* Tables */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:8px 12px;border-bottom:2px solid var(--border)}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:top}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--bg-input)}
+.data-table a{color:var(--text-primary);text-decoration:none;font-weight:600}
+.data-table a:hover{color:var(--accent);text-decoration:underline}
+
+/* Pills */
+.pill{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
+.pill-red{background:#fee2e2;color:var(--red)}
+.pill-amber{background:#fef3c7;color:#b45309}
+.pill-green{background:#dcfce7;color:#15803d}
+.pill-blue{background:#dbeafe;color:#1d4ed8}
+.pill-purple{background:#f3e8ff;color:#7c3aed}
+.pill-gray{background:var(--bg-input);color:var(--text-muted)}
+[data-theme="dark"] .pill-red{background:#450a0a;color:#fca5a5}
+[data-theme="dark"] .pill-amber{background:#451a03;color:#fcd34d}
+[data-theme="dark"] .pill-green{background:#052e16;color:#86efac}
+[data-theme="dark"] .pill-blue{background:#172554;color:#93c5fd}
+[data-theme="dark"] .pill-purple{background:#2e1065;color:#c4b5fd}
+.badge-overdue{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--red);background:#fee2e2;padding:2px 8px;border-radius:6px}
+[data-theme="dark"] .badge-overdue{background:#450a0a;color:#fca5a5}
+.why-cell{max-width:420px;line-height:1.5;color:var(--text-secondary)}
+.why-cell strong{color:var(--text-primary)}
+
+/* Drift summary */
+.drift-summary{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.drift-summary-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 16px;text-align:center;flex:1;min-width:100px}
+.drift-summary-num{font-size:18px;font-weight:800;margin-bottom:2px}
+.drift-summary-label{font-size:10px;color:var(--text-muted)}
+/* Drift filter bar */
+.drift-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.drift-filter-bar input{padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;min-width:180px;outline:none}
+.drift-filter-bar input:focus{border-color:var(--accent)}
+.drift-filter-bar select{padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;outline:none}
+.drift-filter-bar .drift-count{font-size:11px;color:var(--text-muted);margin-left:auto}
+.drift-filter-bar button{padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text-secondary);font-size:11px;cursor:pointer}
+.drift-filter-bar button:hover{background:var(--bg-card);border-color:var(--accent)}
+.days-positive{color:var(--red);font-weight:700}
+.days-negative{color:var(--green);font-weight:700}
+.data-table th.sorted{color:var(--accent)}
+.data-table th .sort-arrow{font-size:9px;margin-left:2px;opacity:.5}
+.data-table th.sorted .sort-arrow{opacity:1}
+
+/* Flags */
+.flags-banner{background:linear-gradient(135deg,#fef2f2,#fff7ed);border:1px solid #fecaca;border-radius:var(--radius);padding:16px 20px}
+[data-theme="dark"] .flags-banner{background:linear-gradient(135deg,#1c1017,#1c1710);border-color:#7f1d1d}
+.flags-banner h3{font-size:13px;font-weight:700;color:var(--red);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.flag-item{padding:10px 14px;margin-bottom:8px;border-radius:8px;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.04);font-size:12px;line-height:1.6;color:var(--text-secondary)}
+[data-theme="dark"] .flag-item{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.04)}
+.flag-item strong{color:var(--text-primary)}
+
+/* Shipped */
+.shipped-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.shipped-item{padding:14px 16px;border-left:3px solid var(--green);background:var(--bg-card);border-radius:0 8px 8px 0;font-size:12px;line-height:1.5;border:1px solid var(--border);border-left:3px solid var(--green)}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.coverage-warn{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px}
+
+/* Strategic Snapshot */
+.strategic-snapshot{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px}
+.snapshot-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.snapshot-title{font-size:14px;font-weight:700;margin-bottom:4px;letter-spacing:-0.01em}
+.snapshot-bottomline{font-size:12px;color:var(--text-secondary);line-height:1.5;max-width:720px}
+.snapshot-asof{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;flex-shrink:0}
+.snapshot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media (max-width:900px){.snapshot-grid{grid-template-columns:1fr}}
+.snapshot-col{min-width:0}
+.snapshot-col-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.snapshot-col-label i{font-size:11px}
+.snapshot-item{padding:8px 10px;border-radius:6px;border:1px solid var(--border);margin-bottom:6px;background:var(--bg-primary)}
+.snapshot-item.shift{border-left:3px solid #f59e0b}
+.snapshot-item.risk{border-left:3px solid #ef4444}
+.snapshot-item-head{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:1.4;margin-bottom:2px}
+.snapshot-item-head a{color:var(--text-primary);text-decoration:none}
+.snapshot-item-head a:hover{color:var(--accent);text-decoration:underline}
+.snapshot-item-detail{font-size:11px;color:var(--text-secondary);line-height:1.5}
+.snapshot-empty{padding:10px 12px;border-radius:6px;background:var(--bg-input);font-size:11px;color:var(--text-muted);font-style:italic}
+
+/* Executive insights */
+.exec-insights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.exec-card{border-radius:var(--radius);padding:16px 20px;font-size:12px;line-height:1.6}
+.exec-card h4{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.exec-card ul{margin:0;padding-left:18px}
+.exec-card li{margin-bottom:4px}
+.exec-working{background:#f0fdf4;border:1px solid #bbf7d0}
+.exec-working h4{color:#15803d}
+.exec-not{background:#fef2f2;border:1px solid #fecaca}
+.exec-not h4{color:var(--red)}
+.exec-pressure{background:#eff6ff;border:1px solid #bfdbfe}
+.exec-pressure h4{color:#1d4ed8}
+[data-theme="dark"] .exec-working{background:#052e16;border-color:#166534}
+[data-theme="dark"] .exec-not{background:#450a0a;border-color:#7f1d1d}
+[data-theme="dark"] .exec-pressure{background:#172554;border-color:#1e3a5f}
+[data-theme="dark"] .coverage-warn{background:#451a03;color:#fcd34d}
+
+/* Hide floating QuickComments trigger button */
+[data-quickcomments-trigger],.quickcomments-trigger,.qc-trigger,.qc-fab,.quickcomments-fab{display:none!important}
+
+/* KPI metric cards in side panel */
+.metrics-section{margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:16px}
+.metrics-period{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.metrics-period .plan-tag{background:var(--bg-input);padding:1px 6px;border-radius:4px;font-weight:700;color:var(--text-secondary)}
+.metric-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.metric-card{background:var(--bg-input);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.metric-card.on-track::before{background:var(--green)}
+.metric-card.behind::before{background:var(--red)}
+.metric-card.neutral::before{background:var(--amber)}
+.metric-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric-value{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);margin-bottom:8px;line-height:1}
+.metric-comparisons{display:flex;flex-direction:column;gap:4px}
+.metric-vs{display:flex;align-items:center;gap:6px;font-size:11px}
+.metric-vs-label{color:var(--text-muted);font-weight:500;min-width:52px}
+.metric-vs-value{font-weight:700}
+.metric-vs-value.positive{color:#15803d}
+.metric-vs-value.negative{color:var(--red)}
+.metric-vs-value.muted{color:var(--text-secondary);font-weight:500}
+[data-theme="dark"] .metric-vs-value.positive{color:#86efac}
+[data-theme="dark"] .metric-vs-value.negative{color:#fca5a5}
+
+/* H1/H2/All toggle */
+.type-toggle{display:flex;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.type-toggle button{padding:4px 10px;font-size:12px;font-weight:500;color:var(--text-muted);background:transparent;border:none;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+.type-toggle button:not(:last-child){border-right:1px solid var(--border)}
+.type-toggle button:hover{background:var(--border);color:var(--text-primary)}
+.type-toggle button.active{background:var(--accent);color:#fff}
+[data-theme="dark"] .type-toggle{background:var(--bg-input);border-color:var(--border)}
+[data-theme="dark"] .type-toggle button{color:var(--text-secondary)}
+[data-theme="dark"] .type-toggle button:not(:last-child){border-color:var(--border)}
+
+.empty{padding:60px;text-align:center;color:var(--text-muted)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app-layout">
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand"><span class="sidebar-logo">💳</span><span class="sidebar-title">PCB Roadmap</span></div>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Collapse"><i class="fas fa-chevron-left"></i></button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="timeline.html" class="nav-item"><i class="fas fa-chart-gantt"></i><span class="nav-label">Roadmap Calendar</span></a>
+    <div class="nav-sub">
+      <a href="index.html" class="nav-sub-item"><i class="fas fa-table-cells"></i><span class="nav-label">Roadmap</span></a>
+      <a href="themes.html" class="nav-sub-item"><i class="fas fa-layer-group"></i><span class="nav-label">By Theme</span></a>
+      <a href="performance.html" class="nav-sub-item"><i class="fas fa-chart-line"></i><span class="nav-label">Performance to Plan</span></a>
+      <a href="calendar.html" class="nav-sub-item"><i class="fas fa-calendar-days"></i><span class="nav-label">Release Calendar</span></a>
+      
+    </div>
+    <a href="weekly.html" class="nav-item parent-active" style="margin-top:8px"><i class="fas fa-bolt"></i><span class="nav-label">Weekly Snapshot</span></a>
+    <div class="nav-sub" id="sectionNav"></div>
+  </div>
+  <div class="sidebar-bottom">
+    <a href="https://docs.google.com/spreadsheets/d/17xd1aWdtf33kUk3giF5WyC4dJpbClOjPGh2cVMYiuvI" target="_blank" class="nav-item"><i class="fas fa-external-link-alt"></i><span class="nav-label">Source Sheet</span></a>
+    <div class="nav-item" id="darkModeToggle"><i class="fas fa-moon"></i><span class="nav-label">Dark Mode</span></div>
+  </div>
+</nav>
+<div class="main-content">
+<header>
+  <span class="header-title" id="headerTitle">Weekly Snapshot</span>
+  <span class="header-sub" id="headerDate"></span>
+  <div style="margin-left:auto"></div>
+</header>
+<div class="content-wrap" id="content"><div class="empty"><span class="spinner"></span> Loading data…</div></div>
+</div>
+<div class="side-panel-overlay" id="sidePanelOverlay" onclick="closeSidePanel()"></div>
+<div class="side-panel" id="sidePanel">
+  <div class="side-panel-header"><span class="side-panel-title" id="sidePanelTitle"></span><button class="side-panel-close" onclick="closeSidePanel()"><i class="fas fa-times"></i></button></div>
+  <div class="side-panel-body" id="sidePanelBody"></div>
+</div>
+</div>
+<script>
+const THEME_CONFIG={'~100% Shopify Payments':{color:'#3b82f6',icon:'💳'},'Defend merchants and Shopify from bad actors':{color:'#ef4444',icon:'🛡️'},'Set a new standard for baseline quality':{color:'#22c55e',icon:'✨'},'Own our Money Infra':{color:'#f59e0b',icon:'🏛️'},'Own Money Infrastructure':{color:'#f59e0b',icon:'🏛️'},'Make Shop Pay the dominant buyer wallet for commerce':{color:'#a855f7',icon:'👛'},'Enable merchants to sell to buyers anywhere in the world':{color:'#06b6d4',icon:'🌍'},'Eng and Infra Excellence':{color:'#6366f1',icon:'⚙️'}};
+const TEAM_CONFIG={'Money Movement':{color:'#3b82f6',icon:'💸',short:'MM'},'Payments Platform & Risk':{color:'#ef4444',icon:'🛡️',short:'PP&R'},'Cross Border':{color:'#06b6d4',icon:'🌍',short:'XB'},'Payments Experience':{color:'#a855f7',icon:'🏪',short:'PE'},'Shop Wallet':{color:'#22c55e',icon:'👛',short:'SW'},'Billing':{color:'#10b981',icon:'🧾',short:'Billing'},'Taxes':{color:'#8b5cf6',icon:'🧮',short:'Taxes'}};
+const PHASES=['planned','off-vault','prototype','build','observe','release','done'];
+const PHASE_COLORS={planned:'#94a3b8','off-vault':'#d1d5db',prototype:'#a855f7',build:'#f59e0b',observe:'#06b6d4',release:'#3b82f6',done:'#6b7280',stopped:'#ef4444'};
+const PHASE_LABELS={planned:'Backlog','off-vault':'Off Vault',prototype:'Prototype',build:'Build',observe:'Observe',release:'Release',done:'Done'};
+const TEAM_ORDER=['Money Movement','Payments Platform & Risk','Cross Border','Payments Experience','Shop Wallet','Billing','Taxes'];
+
+const SECTIONS=[
+  {id:'perf',title:'Performance to Plan',icon:'fa-layer-group',color:'var(--accent)'},
+  {id:'drift',title:'Recent Timeline Drift',icon:'fa-clock-rotate-left',color:'var(--purple)'},
+  {id:'stuck',title:'Stuck in Prototype / Build',icon:'fa-circle-pause',color:'var(--amber)'},
+  {id:'stalled',title:'Stalled Projects',icon:'fa-ban',color:'var(--red)'},
+  {id:'coverage',title:'Coverage Gaps',icon:'fa-users-slash',color:'var(--amber)'},
+  {id:'reviews',title:'Overdue Reviews',icon:'fa-hourglass-half',color:'var(--amber)'},
+];
+
+let allProjects=[],vaultUrls={},commentary={},driftCsvData=[],currentView='perf',perfThemeData={},selectedHalf='all';
+
+function matchesHalf(p){return selectedHalf==='all'||p.half===selectedHalf}
+
+function setHalfFilter(h){
+  selectedHalf=h;
+  ['h1','h2','all'].forEach(t=>{
+    const btn=document.getElementById('type-'+t);
+    if(btn)btn.classList.toggle('active',t===h.toLowerCase());
+  });
+  if(typeof render==='function')render();
+}
+
+// Fallback vault URLs for projects that appear in the drift CSV / weekly reports
+// but aren't tracked as rows in the stack-ranked sheet, so they don't get a
+// vaultUrls entry auto-populated from projects.json.
+const DRIFT_VAULT_URLS = {
+  'sequential nits classifier to unlock embedding signals and uncertainty-based automation':'https://vault.shopify.io/gsd/projects/49630',
+  'sequential nits classifier':'https://vault.shopify.io/gsd/projects/49630',
+  'ledger: tigerbeetle self-hosting & production readiness':'https://vault.shopify.io/gsd/projects/49814',
+  'establish shopify-wide centralized ledger using tigerbeetle':'https://vault.shopify.io/gsd/projects/48328',
+  'improve credit risk detection performance of the dabl credit risk ml model':'https://vault.shopify.io/gsd/projects/50957',
+  'automated retraining pipeline for buyer risk ml models':'https://vault.shopify.io/gsd/projects/50436',
+  'shopify payments payout reconciliation report':'https://vault.shopify.io/gsd/projects/50240',
+  'complete 3p rest paypal integration before re-starting migration to prevent migrating to a degraded paypal product':'https://vault.shopify.io/gsd/projects/48576',
+  'new first-party risk products: core blocking and rules infrastructure':'https://vault.shopify.io/gsd/projects/50640',
+  'shopify payments expansion with antom':'https://vault.shopify.io/gsd/projects/50327',
+  'migrate stripe connect accounts off legacy_payments':'https://vault.shopify.io/gsd/projects/50989',
+  'migrate stripe connect accounts off `legacy_payments`':'https://vault.shopify.io/gsd/projects/50989',
+  'launch managed markets in uk & canada':'https://vault.shopify.io/gsd/projects/49473',
+  'managed markets:  add shipping costs to managed pricing':'https://vault.shopify.io/gsd/projects/51203',
+  'managed markets: add shipping costs to managed pricing':'https://vault.shopify.io/gsd/projects/51203',
+  'first managed markets order hold: default-on at scale':'https://vault.shopify.io/gsd/projects/51204',
+  'money movement citi bank integration':'https://vault.shopify.io/gsd/projects/51235',
+  'launch alipay and wechat pay as shopify payments lpms':'https://vault.shopify.io/gsd/projects/51253',
+  'truemed integration with shop pay':'https://vault.shopify.io/gsd/projects/51231',
+  'chargeback rate policy with merchant guidance':'https://vault.shopify.io/gsd/projects/50013',
+  'integrate us shopify payments onboarding with policies and completeness':'https://vault.shopify.io/gsd/projects/50379',
+  'funds flow - centralize funds flow into ledger':'https://vault.shopify.io/gsd/projects/49401',
+  'payment provider flexibility in a single store':'https://vault.shopify.io/gsd/projects/48767',
+  'role-based access control for managing payments':'https://vault.shopify.io/gsd/projects/49389',
+  'payments api internal refactor to optimize performance and support future growth':'https://vault.shopify.io/gsd/projects/48761',
+  'shop pay network tokenization':'https://vault.shopify.io/gsd/projects/49532',
+  'migrate core payment methods to global vault':'https://vault.shopify.io/gsd/projects/48371',
+  'optimize payment authorization rate through model driven transaction routing':'https://vault.shopify.io/gsd/projects/49388',
+  'enable partners to offload inform compliance to shopify':'https://vault.shopify.io/gsd/projects/46888',
+  'european onboarding requirements refresh (orr) for new and existing merchants':'https://vault.shopify.io/gsd/projects/49695',
+  'money transmitter license in the uk and eu applications':'https://vault.shopify.io/gsd/projects/48742',
+  'support stripe dispute resolution capability enrollment':'https://vault.shopify.io/gsd/projects/50663',
+  'pap-cle sync removal':'https://vault.shopify.io/gsd/projects/50269',
+  'order risk data storage consolidation':'https://vault.shopify.io/gsd/projects/51120',
+};
+
+function getVaultUrl(n){
+  if(!n||!vaultUrls)return null;
+  if(vaultUrls[n])return vaultUrls[n];
+  const l=n.toLowerCase().trim();
+  // Check projects.json map (exact case-insensitive, then substring)
+  for(const[k,u]of Object.entries(vaultUrls)){if(k.toLowerCase().trim()===l)return u}
+  for(const[k,u]of Object.entries(vaultUrls)){const kl=k.toLowerCase().trim();if(l.includes(kl)||kl.includes(l))return u}
+  // Check drift fallback map (exact case-insensitive, then substring)
+  if(DRIFT_VAULT_URLS[l])return DRIFT_VAULT_URLS[l];
+  for(const[k,u]of Object.entries(DRIFT_VAULT_URLS)){if(l.includes(k)||k.includes(l))return u}
+  return null;
+}
+function getPhase(p){const ph=(p.phase||'').toLowerCase().replace(/_/g,'-');if(ph==='done'||ph==='completed'||ph==='complete')return'done';if(ph==='release')return'release';if(ph==='observe')return'observe';if(ph==='build'||ph==='in-progress')return'build';if(ph==='prototype'||ph==='proposal')return'prototype';if(ph==='stopped'||ph==='paused')return'stopped';const vs=(p.vaultStatus||'').toLowerCase();if(vs==='backlog')return'planned';if(vs==='off vault')return'off-vault';if(getVaultUrl(p.name))return'build';return'planned'}
+function parseProjects(rows){if(!rows||rows.length<2)return[];const h=rows[0],ci={};h.forEach((h,i)=>{ci[h.toLowerCase().trim()]=i});return rows.slice(1).map(row=>{const g=k=>{const i=ci[k.toLowerCase()];return i!==undefined?(row[i]||'').trim():''};const n=g('project')||g('project (ensure vault project is linked)');if(!n)return null;return{name:n,theme:g('pcb theme'),team:g('team'),subTeam:g('sub team')||g('subteam'),half:g('h'),rank:g('rank'),shipping:g('shipping'),status:g('status'),phase:g('phase'),vaultStatus:g('vault status'),starts:g('starts'),priority:g('priority'),partnerTeams:g('partner teams (internal)')}}).filter(p=>p&&p.theme)}
+function dedupeProjects(ps){const s={},r=[];for(const p of ps){const k=(getVaultUrl(p.name)||p.name).toLowerCase();if(s[k]){if(!s[k].phase&&p.phase)s[k]=p;continue}s[k]=p;r.push(p)}return r.map(p=>{const k=(getVaultUrl(p.name)||p.name).toLowerCase();return s[k]||p})}
+function phaseBar(c,t){
+  const planned=(c.planned||0)+(c['off-vault']||0);
+  const dp=[{l:'Planned',n:planned,cl:'#94a3b8'},{l:'Prototype',n:c.prototype||0,cl:'#a855f7'},{l:'Build',n:c.build||0,cl:'#f59e0b'},{l:'Observe',n:c.observe||0,cl:'#06b6d4'},{l:'Release',n:c.release||0,cl:'#3b82f6'},{l:'Done',n:c.done||0,cl:'#6b7280'}].filter(p=>p.n>0);
+  const s=dp.map(p=>`<div class="phase-seg" style="width:${(p.n/t)*100}%;background:${p.cl}" title="${p.l}: ${p.n}"></div>`).join('');
+  const l=dp.map(p=>`<div class="phase-leg"><div class="phase-dot" style="background:${p.cl}"></div>${p.l} (${p.n})</div>`).join('');
+  return{s,l}
+}
+function link(n,u){return u?`<a href="${u}" target="_blank">${n}</a>`:n}
+function pillPhase(phase){const cls={prototype:'pill-purple',build:'pill-amber',observe:'pill-blue',release:'pill-blue',done:'pill-gray',stopped:'pill-red',planned:'pill-gray','off-vault':'pill-gray'};return`<span class="pill ${cls[phase]||'pill-gray'}">${PHASE_LABELS[phase]||phase}</span>`}
+
+function ring(pct,color,size=64){
+  const r=(size/2)-5,c=2*Math.PI*r,off=c-(pct/100)*c;
+  return`<div class="ring-wrap" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle class="ring-bg" cx="${size/2}" cy="${size/2}" r="${r}"/><circle class="ring-fg" cx="${size/2}" cy="${size/2}" r="${r}" stroke="${color}" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg><span class="ring-pct">${Math.round(pct)}%</span></div>`;
+}
+
+const STRATEGIC_SNAPSHOT = {
+  asOf: 'Jul 6, 2026',
+  bottomLine: 'Cycle (Jun 29 – Jul 6): Mixed week — meaningful progress on foundational infra (TigerBeetle 2.0.0 released, Plus ToS deployed, +18.6 bps auth lift on ML routing) with a few risks needing leadership attention. Critical items: Automated retraining pipeline gated on evidence + review capacity, not tech; US Onboarding 7 P0s remain heading into Jul 6 launch week; Shop Pay NT VGS contract still unsigned; Amex excluded from payment routing launch pending investigation. Twenty projects shifted dates; four new projects kicked off (Managed Markets shipping, MM Order Hold, Truemed, Alipay/WeChat).',
+  shipped: [],
+  shifted: [
+    { name: 'Shop Pay Network Tokenization', url: 'https://vault.shopify.io/gsd/projects/49532', detail: 'Internal +57d (May 21 → Jul 17), LR +57d (Jun 4 → Jul 31). VGS contract still not signed. CAU performance baselining completed — Stripe real-time CAU reliance higher than expected; release phase delayed to prioritize CAU measurement. Multi-provider architectural changes made; sync consumer instrumented in dry-run mode; Shop Pay fallback resilience testing added. Nick Jones.', priority: 'P1' },
+    { name: 'Migrate Core Payment Methods to Global Vault', url: 'https://vault.shopify.io/gsd/projects/48371', detail: 'LR +105d (Jan 12 → Apr 27), GA +168d (Jan 30 → Jul 17). Completed GV direct-write cutover stack; six flags reached 100%; GV read flags resumed rollout; critical infra gap and race condition fixed. Confident on dev-complete this week; 2-week rollout to follow. Harry Venables.', priority: 'P2' },
+    { name: 'Sequential NITS classifier', url: 'https://vault.shopify.io/gsd/projects/49630', detail: 'LR +98d (Apr 7 → Jul 14). Non-SP shops added as training negatives made distribution materially harder; challenger model clears $ PRAUC operating metric. Team HC-constrained; catalog embeddings backfilling underway. Breno Freitas.', priority: 'P2' },
+    { name: 'Launch Alipay and WeChat Pay as Shopify Payments LPMs', url: 'https://vault.shopify.io/gsd/projects/51253', detail: 'EA +8d (Jul 2 → Jul 10), GA +92d (Jul 15 → Oct 15). Alipay paced to Stripe\'s 450/week onboarding limit; WeChat Pay GA gated on Stripe\'s "WeChat H5" onboarding API (not ready until late September). Splitting delivery: Alipay targeting Jul 31, WeChat mid-October. Andy Di.', priority: 'P2' },
+    { name: 'Integrate US Shopify Payments Onboarding with Policies and Completeness', url: 'https://vault.shopify.io/gsd/projects/50379', detail: 'LR +38d (Jun 2 → Jul 10). Late-stage bug hunts and exec review kept surfacing new P0s in the onboarding flow (broken business types, UX gaps, resubmission loop). Resolved 15 of 22 P0s; 7 remain heading into Jul 6 launch week. Team targeting Jul 7 resolution before US flight. Ahmad Dandachi.', priority: 'P1' },
+    { name: 'PAP-CLE Sync Removal', url: 'https://vault.shopify.io/gsd/projects/50269', detail: 'End Date +31d (Jul 15 → Aug 15). Two devs pulled mid-project to support Neobank and Stripe Stablecoin initiatives; a critical cross-org security/PII issue also surfaced and is under investigation. On-track at 67% otherwise — data mismatches down from ~28k to ~17k, Cohort 4 backfill complete, 17 Abacus M3c PRs merged. Shawn Shellenbarger.', priority: 'P2' },
+    { name: 'Managed Markets: Add shipping costs to managed pricing', url: 'https://vault.shopify.io/gsd/projects/51203', detail: 'End Date +29d (Jul 16 → Aug 14). Team cut for 3 weeks to fund regulatory changes, compressing the runway to the Jul 17 Build gate. Design work continued — settings modal simplified after stakeholder feedback and usability study is ready to ship. On-track at 33% but buffer is gone. Michelle Wu.', priority: 'P1' },
+    { name: 'Payments API internal refactor', url: 'https://vault.shopify.io/gsd/projects/48761', detail: 'GA +26d (Jun 12 → Jul 8). Deliberately slow phased rollout on a live money-movement path (staff → 1% → 10% → 30% → 100%); each soak surfaced small issues (load-test bottleneck, unhandled error) that reset the clock. Resume Payment Pipeline now at 100% Staff / 10% GA; final rollouts complete this week. Cautious pace, not a broken project. Owen Linton.', priority: 'P2' },
+    { name: 'Funds Flow — Centralize Funds Flow into Ledger', url: 'https://vault.shopify.io/gsd/projects/49401', detail: 'Internal +41d, LR +14d. Pre-prod unblocked with infrastructure fixes deployed; existing-merchant opening-balance stack shipped and moved to validation; net-new merchant validation resumed. Settlement validation awaiting pre-prod materialized transfers fix. DJ Patterson.', priority: 'P1' },
+    { name: 'Shopify Payments Payout Reconciliation Report', url: 'https://vault.shopify.io/gsd/projects/50240', detail: 'EA +35d (May 15 → Jun 19). Feature flag rollout progressed from 1% → 10% with plan to reach 100% by next week; staging pipeline issues resolved. Marcelo Mottalli.', priority: 'P2' },
+    { name: 'Chargeback rate policy with merchant guidance', url: 'https://vault.shopify.io/gsd/projects/50013', detail: 'GA +34d (May 27 → Jun 30). Fully enforced at 100%; extending to close out Stripe RDR integration subproject. Traian Svinți.', priority: 'P2' },
+    { name: 'First Managed Markets Order Hold: Default-on at scale', url: 'https://vault.shopify.io/gsd/projects/51204', detail: 'GA +15d (Jul 2 → Jul 17). Design decisions aligned (Adaptive Pricing ON for first order); money movement architecture designed; default-on experiment rolled back to 0%. Rebecca Samos Sanchez.', priority: 'P2' },
+  ],
+  risks: [
+    { name: 'Automated retraining pipeline for buyer risk ML models', url: 'https://vault.shopify.io/gsd/projects/50436', detail: 'AT RISK — Release gated on outstanding fix PRs being reviewed, post-merge evidence generation for all models, materialized selector metrics, PagerDuty-backed alerting, and shadow/evaluator evidence — none complete. Blockers labeled capacity + other. Needs additional review capacity or scoped decision on which evidence gates are required. Nate George.', priority: 'P2' },
+    { name: 'Integrate US Shopify Payments Onboarding with Policies and Completeness', url: 'https://vault.shopify.io/gsd/projects/50379', detail: 'AT RISK — 15 of 22 P0 blockers resolved; 7 remain heading into Jul 6 launch target week. PO Box restriction policy shipped, unblocking PayPal dependency. Team targeting Jul 7 resolution before US flight. Coordination dependencies for remaining P0s. Ahmad Dandachi.', priority: 'P1' },
+    { name: 'Optimize payment authorization rate through model driven transaction routing', url: 'https://vault.shopify.io/gsd/projects/49388', detail: 'AT RISK — Delivering +18.6 bps auth lift in the key decline score band. Amex identified as only card brand showing negative results — excluded from launch while ML engineering investigates underperformance. Planning 99% treatment ramp after US holiday. Needs Amex re-inclusion timeline. Eugene Chae.', priority: 'P1' },
+    { name: 'Shop Pay Network Tokenization', url: 'https://vault.shopify.io/gsd/projects/49532', detail: 'AT RISK — VGS contract still not signed. CAU performance baselining completed — Stripe real-time CAU reliance higher than expected; release phase delayed to prioritize CAU measurement and improve documentation. Multi-provider architectural changes made. Nick Jones.', priority: 'P1' },
+    { name: 'Cross Border Transactions (CBT) for Shop Pay Installments', url: 'https://vault.shopify.io/gsd/projects/50588', detail: 'PAUSED (~7 weeks, since May 14). Cross-border SPI for US/UK/CA — a TAM expansion that unlocks BNPL for every existing SPI merchant with zero merchant onboarding — sitting idle on a coordination blocker with no strategic review scheduled. Vault page hasn\'t been updated since May 14 and the planned Jun 21 resume did not happen. Ron Danino.', priority: 'P1' },
+  ],
+};
+
+function renderStrategicSnapshot(){
+  const s = STRATEGIC_SNAPSHOT;
+  const pillFor = (p) => {
+    if (p === 'P0') return '<span class="pill pill-red" style="font-size:10px;padding:1px 6px">P0</span>';
+    if (p === 'P2') return '<span class="pill pill-gray" style="font-size:10px;padding:1px 6px">P2</span>';
+    if (p === 'P3' || p === 'P3-P4') return '<span class="pill pill-gray" style="font-size:10px;padding:1px 6px">P3</span>';
+    return '<span class="pill pill-amber" style="font-size:10px;padding:1px 6px">P1</span>';
+  };
+
+  const shiftedHtml = s.shifted.map(i => `<div class="snapshot-item shift"><div class="snapshot-item-head">${pillFor(i.priority)} <a href="${i.url}" target="_blank">${i.name}</a></div><div class="snapshot-item-detail">${i.detail}</div></div>`).join('');
+
+  const risksHtml = s.risks.map(i => `<div class="snapshot-item risk"><div class="snapshot-item-head">${pillFor(i.priority)} <a href="${i.url}" target="_blank">${i.name}</a></div><div class="snapshot-item-detail">${i.detail}</div></div>`).join('');
+
+  return `<div class="strategic-snapshot">
+    <div class="snapshot-header">
+      <div>
+        <div class="snapshot-title">Strategic Snapshot</div>
+        <div class="snapshot-bottomline">${s.bottomLine}</div>
+      </div>
+      <div class="snapshot-asof">As of ${s.asOf} &middot; GA/Release/EA/LR/Internal shifts &gt; 1 week</div>
+    </div>
+    <div class="snapshot-grid">
+      <div class="snapshot-col">
+        <div class="snapshot-col-label"><i class="fas fa-arrows-rotate" style="color:#f59e0b"></i> Date Shifts (${s.shifted.length})</div>
+        ${shiftedHtml}
+      </div>
+      <div class="snapshot-col">
+        <div class="snapshot-col-label"><i class="fas fa-triangle-exclamation" style="color:#ef4444"></i> Risks &amp; Blockers (${s.risks.length})</div>
+        ${risksHtml}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPerf(list){
+  const sel=selectedHalf==='all'?'All':selectedHalf;
+  const oc={};PHASES.forEach(p=>oc[p]=0);list.forEach(p=>{const ph=getPhase(p);if(oc[ph]!==undefined)oc[ph]++;else oc.build++});
+  const adv=(oc.prototype||0)+(oc.build||0)+(oc.observe||0)+(oc.release||0)+(oc.done||0),pct=list.length?(adv/list.length)*100:0,bar=phaseBar(oc,list.length);
+  let html=`<div class="overall-bar" style="display:flex;align-items:center;gap:24px"><div>${ring(pct,'#0088FF',80)}</div><div class="overall-info"><div class="overall-title">${Math.round(pct)}% Complete</div><div class="overall-sub">${adv} of ${list.length} ${sel} projects in progress or done</div><div style="margin-top:10px"><div class="phase-bar">${bar.s}</div><div class="phase-legend">${bar.l}</div></div></div></div>`;
+  const byTheme={};list.forEach(p=>{const t=p.theme||'Other';if(!byTheme[t])byTheme[t]=[];byTheme[t].push(p)});
+  perfThemeData=byTheme;
+  html+='<div class="bubble-grid">';
+  Object.keys(THEME_CONFIG).forEach((theme,idx)=>{
+    const projects=byTheme[theme];if(!projects||!projects.length)return;
+    const cfg=THEME_CONFIG[theme];
+    const tc={};PHASES.forEach(p=>tc[p]=0);projects.forEach(p=>{const ph=getPhase(p);if(tc[ph]!==undefined)tc[ph]++;else tc.build++});
+    const tAdv=(tc.prototype||0)+(tc.build||0)+(tc.observe||0)+(tc.release||0)+(tc.done||0),tPct=projects.length?(tAdv/projects.length)*100:0;
+    const tBar=phaseBar(tc,projects.length);
+    const phOrd={prototype:0,build:1,release:2,observe:3,done:4,planned:5,stopped:6,'off-vault':7};
+    const sorted=[...projects].sort((a,b)=>(phOrd[getPhase(a)]??8)-(phOrd[getPhase(b)]??8));
+    const rows=sorted.map(p=>{const ph=getPhase(p);const u=getVaultUrl(p.name);return`<tr><td style="font-weight:600">${link(p.name,u)}</td><td style="text-align:center;font-weight:600">${p.rank||'—'}</td><td><span class="pill pill-${p.priority==='P0'?'red':p.priority==='P1'?'amber':'gray'}">${p.priority||'—'}</span></td><td>${p.subTeam||'—'}</td><td>${pillPhase(ph)}</td><td>${p.shipping||'—'}</td></tr>`}).join('');
+    html+=`<div class="card bubble" onclick="openThemePanel('${theme.replace(/'/g,"\\'")}')"><div class="bubble-ring">${ring(tPct,cfg.color,64)}</div><div class="bubble-icon">${cfg.icon}</div><div class="bubble-name">${theme}</div><div class="bubble-count">${projects.length} projects</div><div class="bubble-expand"><i class="fas fa-chevron-right"></i> View details</div></div>`;
+  });
+  html+='</div>';
+  html+=renderStrategicSnapshot();
+  return html;
+}
+
+function openThemePanel(theme){
+  const projects=perfThemeData[theme];if(!projects)return;
+  const cfg=THEME_CONFIG[theme]||{color:'#6b7280',icon:'📦'};
+  const tc={};PHASES.forEach(p=>tc[p]=0);projects.forEach(p=>{const ph=getPhase(p);if(tc[ph]!==undefined)tc[ph]++;else tc.build++});
+  const tBar=phaseBar(tc,projects.length);
+  document.getElementById('sidePanelTitle').innerHTML=`<span style="margin-right:8px">${cfg.icon}</span>${theme}`;
+  const phOrd={prototype:0,build:1,release:2,observe:3,done:4,planned:5,stopped:6,'off-vault':7};
+  const sorted=[...projects].sort((a,b)=>(phOrd[getPhase(a)]??8)-(phOrd[getPhase(b)]??8));
+  const rows=sorted.map(p=>{const ph=getPhase(p);const u=getVaultUrl(p.name);return`<tr><td style="font-weight:600">${link(p.name,u)}</td><td><span class="pill pill-${p.priority==='P0'?'red':p.priority==='P1'?'amber':'gray'}">${p.priority||'—'}</span></td><td>${p.subTeam||'—'}</td><td>${pillPhase(ph)}</td><td>${p.shipping||'—'}</td></tr>`}).join('');
+  document.getElementById('sidePanelBody').innerHTML=`<div class="phase-bar">${tBar.s}</div><div class="phase-legend" style="margin-top:6px;margin-bottom:16px">${tBar.l}</div><table class="data-table"><thead><tr><th>Project</th><th>Priority</th><th>Sub Team</th><th>Phase</th><th>Est. End</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('sidePanel').classList.add('open');document.getElementById('sidePanelOverlay').classList.add('open');
+}
+function closeSidePanel(){document.getElementById('sidePanel').classList.remove('open');document.getElementById('sidePanelOverlay').classList.remove('open')}
+
+function renderFlags(){
+  if(!commentary.flags||!commentary.flags.length)return'<div class="empty">No flags this cycle.</div>';
+  let html='<div class="flags-banner"><h3><i class="fas fa-triangle-exclamation"></i> Decisions Needed from SLT</h3>';
+  let cur=[];commentary.flags.forEach(f=>{if(/^\d+\./.test(f)&&cur.length){html+=flagGrp(cur);cur=[]}cur.push(f)});
+  if(cur.length)html+=flagGrp(cur);return html+'</div>';
+}
+function flagGrp(items){let h='<div class="flag-item">';items.forEach((it,i)=>{if(i===0)h+=`<strong>${it}</strong>`;else if(it.toLowerCase().startsWith('tldr'))h+=`<br>${it}`;else if(it.toLowerCase().startsWith('question'))h+=`<br><span style="color:var(--red);font-weight:600">${it}</span>`;else h+=`<br>${it}`});return h+'</div>'}
+
+function renderStuck(){
+  const proto=commentary.stuckInPrototype||[];
+  const build=commentary.extendedBuild||[];
+  const all=[...proto.map(r=>({...r,stuckPhase:'Prototype'})),...build.map(r=>({...r,stuckPhase:'Build'}))];
+  if(!all.length)return'<div class="empty">No projects stuck in Prototype or Build this cycle.</div>';
+  let h='<div class="card" style="overflow:auto"><table class="data-table"><thead><tr><th>Project</th><th>Team</th><th>Priority</th><th>Phase</th><th>Weeks</th><th>Why</th></tr></thead><tbody>';
+  all.forEach(r=>{const od=r.why&&(r.why.includes('OVERDUE')||r.why.includes('⏰'));const phCls=r.stuckPhase==='Prototype'?'pill-purple':'pill-amber';h+=`<tr><td style="font-weight:600">${link(r.project,r.vault_url||getVaultUrl(r.project))} ${od?'<span class="badge-overdue"><i class="fas fa-clock"></i> OVERDUE</span>':''}</td><td>${r.team}</td><td><span class="pill pill-amber">${r.priority}</span></td><td><span class="pill ${phCls}">${r.stuckPhase}</span></td><td style="font-weight:700;text-align:center">${r.weeks}</td><td class="why-cell">${r.why}</td></tr>`});
+  return h+'</tbody></table></div>';
+}
+
+let driftSortCol='daysChanged',driftSortDir=-1,driftFilters={search:'',team:'',phase:'',milestone:'',partnerTeam:''};
+
+// Cache project → partner-teams tokens (from projects.json) for the slip filter.
+function getPartnerTeamsFor(projectName){
+  if(!projectName||!allProjects)return [];
+  const target=projectName.trim().toLowerCase();
+  let hit=allProjects.find(p=>(p.name||'').trim().toLowerCase()===target);
+  if(!hit)hit=allProjects.find(p=>{
+    const n=(p.name||'').toLowerCase();
+    return n && (n.includes(target)||target.includes(n));
+  });
+  if(!hit)return [];
+  return (hit.partnerTeams||'').split(',').map(v=>v.trim()).filter(Boolean);
+}
+
+function getDriftFiltered(){
+  let cs=driftCsvData.map(r=>({...r,daysNum:parseInt(r.days)||0}));
+  const q=driftFilters.search.toLowerCase();
+  if(q)cs=cs.filter(c=>c.project.toLowerCase().includes(q)||c.champion.toLowerCase().includes(q)||c.reason.toLowerCase().includes(q)||c.team.toLowerCase().includes(q));
+  if(driftFilters.team)cs=cs.filter(c=>c.team===driftFilters.team);
+  if(driftFilters.phase)cs=cs.filter(c=>c.phase===driftFilters.phase);
+  if(driftFilters.milestone)cs=cs.filter(c=>c.milestone===driftFilters.milestone);
+  if(driftFilters.partnerTeam){
+    const want=driftFilters.partnerTeam.toLowerCase().trim();
+    if(want)cs=cs.filter(c=>getPartnerTeamsFor(c.project).some(pt=>pt.toLowerCase().includes(want)));
+  }
+  return cs;
+}
+
+function groupByProject(rows){
+  const groups={};
+  rows.forEach(r=>{
+    const key=r.project.trim().toLowerCase()+'||'+r.team+'||'+r.phase;
+    if(!groups[key])groups[key]={team:r.team,project:r.project.trim(),phase:r.phase,champion:r.champion,reason:r.reason,milestones:[],maxDays:0};
+    groups[key].milestones.push({milestone:r.milestone,oldDate:r.oldDate,newDate:r.newDate,days:r.daysNum});
+    if(Math.abs(r.daysNum)>Math.abs(groups[key].maxDays))groups[key].maxDays=r.daysNum;
+    if(!groups[key].reason&&r.reason)groups[key].reason=r.reason;
+  });
+  let grouped=Object.values(groups);
+  grouped.sort((a,b)=>{
+    if(driftSortCol==='daysChanged')return(a.maxDays-b.maxDays)*driftSortDir;
+    const va=a[driftSortCol]||'',vb=b[driftSortCol]||'';
+    return(va||'').localeCompare(vb||'')*driftSortDir;
+  });
+  return grouped;
+}
+
+function renderDrift(){
+  if(!driftCsvData.length)return'<div class="empty">No timeline drift data this cycle.</div>';
+  const total=driftCsvData.length;
+  const gaChanges=driftCsvData.filter(r=>(r.milestone||'').toLowerCase()==='general availability');
+  const avgGaSlip=gaChanges.length?Math.round(gaChanges.reduce((s,c)=>s+parseInt(c.days||0),0)/gaChanges.length):0;
+  const sel=dedupeProjects(allProjects.filter(p=>matchesHalf(p)&&(p.rank||'').toUpperCase()!=='N/A'));
+  const protoProjects=sel.filter(p=>getPhase(p)==='prototype'&&p.starts);
+  const buildProjects=sel.filter(p=>getPhase(p)==='build'&&p.starts);
+  const now=new Date();
+  function avgWeeks(ps){if(!ps.length)return 0;const total=ps.reduce((s,p)=>{const d=new Date(p.starts);return s+(isNaN(d)?0:Math.max(0,(now-d)/(1000*60*60*24*7)))},0);return Math.round(total/ps.length*10)/10}
+  const avgProto=avgWeeks(protoProjects),avgBuild=avgWeeks(buildProjects);
+
+  let h='';
+  const di=commentary.driftInsights;
+  if(di){
+    h+='<div class="exec-insights">';
+    if(di.working&&di.working.length)h+=`<div class="exec-card exec-working"><h4><span>✓</span> What's Working</h4><ul>${di.working.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+    if(di.notWorking&&di.notWorking.length)h+=`<div class="exec-card exec-not"><h4><span>✗</span> What's Not Working</h4><ul>${di.notWorking.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+    if(di.pressure&&di.pressure.length)h+=`<div class="exec-card exec-pressure"><h4><span>→</span> Where to Apply Pressure</h4><ul>${di.pressure.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+    h+='</div>';
+  }
+
+  const teams=[...new Set(driftCsvData.map(c=>c.team).filter(Boolean))].sort();
+  const phases=[...new Set(driftCsvData.map(c=>c.phase).filter(Boolean))].sort();
+  const milestones=[...new Set(driftCsvData.map(c=>c.milestone).filter(Boolean))].sort();
+
+  // Partner Teams options come from projects.json (Partner Teams (Internal) column) — split on commas.
+  const partnerTeamOpts=[...new Set(
+    (driftCsvData||[]).flatMap(r=>getPartnerTeamsFor(r.project))
+      .map(v=>v.trim())
+      .filter(v=>v && v.length<=35 && !/[.!?]/.test(v))
+  )].sort();
+  h+=`<div class="drift-filter-bar"><input type="text" id="driftSearch" placeholder="Search projects…" oninput="driftFilters.search=this.value;renderDriftTable()"><select id="driftTeam" onchange="driftFilters.team=this.value;renderDriftTable()"><option value="">All teams</option>${teams.map(t=>`<option>${t}</option>`).join('')}</select><select id="driftPhase" onchange="driftFilters.phase=this.value;renderDriftTable()"><option value="">All phases</option>${phases.map(t=>`<option>${t}</option>`).join('')}</select><select id="driftMilestone" onchange="driftFilters.milestone=this.value;renderDriftTable()"><option value="">All milestones</option>${milestones.map(t=>`<option>${t}</option>`).join('')}</select><input type="text" list="driftPartnerTeamOptions" id="driftPartnerTeam" placeholder="Search partner teams…" oninput="driftFilters.partnerTeam=this.value;renderDriftTable()"><datalist id="driftPartnerTeamOptions">${partnerTeamOpts.map(t=>`<option value="${t}">`).join('')}</datalist><button onclick="driftFilters={search:'',team:'',phase:'',milestone:'',partnerTeam:''};document.getElementById('driftSearch').value='';document.getElementById('driftPartnerTeam').value='';document.querySelectorAll('.drift-filter-bar select').forEach(s=>s.value='');renderDriftTable()">Clear</button><span class="drift-count" id="driftCount"></span></div>`;
+  h+='<div id="driftTableWrap"></div>';
+  setTimeout(renderDriftTable,0);
+  return h;
+}
+
+// Fallback priorities for drift-CSV projects whose names don't line up cleanly
+// with a stack-ranked row in projects.json. Values verified against Vault + the
+// weekly reports.
+const DRIFT_PRIORITIES = {
+  'managed markets:  add shipping costs to managed pricing':'P1',
+  'managed markets: add shipping costs to managed pricing':'P1',
+  'first managed markets order hold: default-on at scale':'P2',
+  'money movement citi bank integration':'P2',
+  'launch alipay and wechat pay as shopify payments lpms':'P2',
+  'order risk data storage consolidation':'P2',
+  'truemed integration with shop pay':'P2',
+  'ledger: tigerbeetle self-hosting & production readiness':'P1',
+  'establish shopify-wide centralized ledger using tigerbeetle':'P1',
+  'chargeback rate policy with merchant guidance':'P2',
+  'integrate us shopify payments onboarding with policies and completeness':'P1',
+  'pap-cle sync removal':'P1',
+  'automated retraining pipeline for buyer risk ml models':'P2',
+  'improve credit risk detection performance of the dabl credit risk ml model':'P2',
+  'sequential nits classifier to unlock embedding signals and uncertainty-based automation':'P2',
+  'payments api internal refactor to optimize performance and support future growth':'P2',
+  'shop pay network tokenization':'P1',
+  'funds flow - centralize funds flow into ledger':'P1',
+  'payment provider flexibility in a single store':'P1',
+  'role-based access control for managing payments':'P1',
+  'new first-party risk products: core blocking and rules infrastructure':'P1',
+  'shopify payments payout reconciliation report':'P2',
+  'complete 3p rest paypal integration before re-starting migration to prevent migrating to a degraded paypal product':'P2',
+  'migrate core payment methods to global vault':'P2',
+  'optimize payment authorization rate through model driven transaction routing':'P1',
+  'enable partners to offload inform compliance to shopify':'P1',
+  'european onboarding requirements refresh (orr) for new and existing merchants':'P1',
+  'money transmitter license in the uk and eu applications':'P1',
+  'support stripe dispute resolution capability enrollment':'P2',
+  'migrate stripe connect accounts off legacy_payments':'P2',
+  'migrate stripe connect accounts off `legacy_payments`':'P2',
+  'launch managed markets in uk & canada':'P1',
+  'shopify payments expansion with antom':'P1',
+};
+
+function getPriorityForProject(name){
+  if(!name)return '';
+  const target=name.trim().toLowerCase();
+  // 1) Try projects.json exact match
+  if(allProjects){
+    let hit=allProjects.find(p=>(p.name||'').trim().toLowerCase()===target);
+    if(!hit)hit=allProjects.find(p=>{
+      const n=(p.name||'').toLowerCase();
+      return n && (n.includes(target)||target.includes(n));
+    });
+    if(hit&&hit.priority)return hit.priority;
+  }
+  // 2) Fall back to the drift priority map
+  if(DRIFT_PRIORITIES[target])return DRIFT_PRIORITIES[target];
+  for(const[k,v] of Object.entries(DRIFT_PRIORITIES)){
+    if(target.includes(k)||k.includes(target))return v;
+  }
+  return '';
+}
+
+function prioPill(p){
+  if(!p)return '<span class="pill pill-gray" style="font-size:10px;padding:1px 6px">—</span>';
+  if(p==='P0')return '<span class="pill pill-red" style="font-size:10px;padding:1px 6px">P0</span>';
+  if(p==='P1')return '<span class="pill pill-amber" style="font-size:10px;padding:1px 6px">P1</span>';
+  if(p==='P2')return '<span class="pill pill-blue" style="font-size:10px;padding:1px 6px">P2</span>';
+  return `<span class="pill pill-gray" style="font-size:10px;padding:1px 6px">${p}</span>`;
+}
+
+function renderDriftTable(){
+  const cs=getDriftFiltered();
+  const grouped=groupByProject(cs);
+  const wrap=document.getElementById('driftTableWrap');
+  const countEl=document.getElementById('driftCount');
+  if(countEl)countEl.textContent=`${grouped.length} projects (${cs.length} changes)`;
+  if(!wrap)return;
+  if(!grouped.length){wrap.innerHTML='<div class="empty">No changes match filters.</div>';return}
+  const cols=[{key:'team',label:'Team'},{key:'priority',label:'P',noSort:true},{key:'project',label:'Project'},{key:'phase',label:'Phase'},{key:'dates',label:'Date Change',noSort:true},{key:'reason',label:'Reason',noSort:true},{key:'partnerTeam',label:'Partner Teams',noSort:true},{key:'champion',label:'Champion'}];
+  const thead=cols.map(c=>`<th data-col="${c.key}" class="${driftSortCol===c.key?'sorted':''}" ${!c.noSort?`onclick="driftSort('${c.key}')"style="cursor:pointer"`:''} >${c.label}${!c.noSort?`<span class="sort-arrow">${driftSortCol===c.key?(driftSortDir===1?'▲':'▼'):'▲'}</span>`:''}</th>`).join('');
+  const mlAbbrv={'General Availability':'GA','Limited Release':'LR','Early Access':'EA','End Date':'End Date','Internal':'Internal'};
+  const rows=grouped.map(g=>{
+    const phCls=g.phase.toLowerCase()==='build'?'pill-amber':g.phase.toLowerCase()==='release'?'pill-blue':g.phase.toLowerCase()==='prototype'?'pill-purple':'pill-gray';
+    const vaultUrl=getVaultUrl(g.project)||`https://vault.shopify.io/search?q=${encodeURIComponent(g.project)}`;
+    const reason=g.reason.length>150?g.reason.substring(0,150)+'…':g.reason;
+    const priority=getPriorityForProject(g.project);
+    const partnerTeams=getPartnerTeamsFor(g.project);
+    const partnerCell=partnerTeams.length
+      ? partnerTeams.map(pt=>`<span class="pill pill-gray" style="font-size:10px;padding:1px 6px;margin:1px 2px 1px 0;display:inline-block;white-space:nowrap">${pt}</span>`).join('')
+      : '<span style="color:var(--text-muted)">—</span>';
+    const dateLines=g.milestones.map(m=>{
+      const label=mlAbbrv[m.milestone]||m.milestone;
+      const dCls=m.days>0?'days-positive':m.days<0?'days-negative':'';
+      const dDisplay=m.days>0?'+'+m.days+'d':m.days+'d';
+      return`<div style="white-space:nowrap;margin-bottom:2px"><span style="color:var(--text-muted);min-width:70px;display:inline-block">${label}:</span> ${m.oldDate} → ${m.newDate} <span class="${dCls}" style="font-weight:700;margin-left:6px">${dDisplay}</span></div>`;
+    }).join('');
+    return`<tr><td>${g.team}</td><td>${prioPill(priority)}</td><td style="font-weight:600">${link(g.project,vaultUrl)}</td><td><span class="pill ${phCls}">${g.phase}</span></td><td>${dateLines}</td><td class="why-cell">${reason}</td><td style="max-width:180px">${partnerCell}</td><td style="white-space:nowrap">${g.champion}</td></tr>`;
+  }).join('');
+  wrap.innerHTML=`<div class="card" style="overflow:auto"><table class="data-table"><thead><tr>${thead}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+window.driftSort=function(col){if(driftSortCol===col)driftSortDir*=-1;else{driftSortCol=col;driftSortDir=col==='daysChanged'?-1:1}renderDriftTable()}
+
+function parseDriftCsv(text){const lines=text.split('\n').filter(l=>l.trim());if(lines.length<2)return[];const result=[];for(let i=1;i<lines.length;i++){const cols=[];let cur='',inQ=false;for(let j=0;j<lines[i].length;j++){const c=lines[i][j];if(c==='"'){inQ=!inQ;continue}if(c===','&&!inQ){cols.push(cur.trim());cur='';continue}cur+=c}cols.push(cur.trim());if(cols.length>=8)result.push({team:cols[0],project:cols[1],phase:cols[2],milestone:cols[3],oldDate:cols[4],newDate:cols[5],days:cols[6],reason:cols[7],champion:cols[8]||''})}return result}
+
+function renderStalled(){
+  const e=commentary.stalledP1s||[];
+  const auto=allProjects.filter(p=>getPhase(p)==='stopped'&&matchesHalf(p)&&(p.rank||'').toUpperCase()!=='N/A');
+  const m=new Map();e.forEach(r=>{if(r.project)m.set(r.project.toLowerCase(),r)});
+  auto.forEach(p=>{const k=p.name.toLowerCase();if(!m.has(k))m.set(k,{project:p.name,team:TEAM_CONFIG[p.team]?.short||p.team,priority:p.priority||'',reason:'Auto-detected: phase is Stopped',vault_url:getVaultUrl(p.name)})});
+  const all=[...m.values()];if(!all.length)return'<div class="empty">No stalled projects this cycle.</div>';
+  let h='<div class="card" style="overflow:auto"><table class="data-table"><thead><tr><th>Project</th><th>Team</th><th>Priority</th><th>Stopped / Paused</th><th>Details</th></tr></thead><tbody>';
+  all.forEach(r=>{const dt=r.stoppedDate||'';const phLabel=r.phase||'Stopped';const datePill=dt?`<span class="pill pill-red">${dt}</span>`:'—';h+=`<tr><td style="font-weight:600">${link(r.project,r.vault_url||getVaultUrl(r.project))}</td><td>${r.team}</td><td><span class="pill pill-red">${r.priority||'—'}</span></td><td style="white-space:nowrap">${datePill}<br><span style="font-size:10px;color:var(--text-muted)">${phLabel}</span></td><td class="why-cell">${r.reason||'Stopped/Paused'}</td></tr>`});
+  return h+'</tbody></table></div>';
+}
+
+function renderCoverage(){
+  const cg=commentary.coverageGaps;
+  if(!cg)return'<div class="empty">No coverage gap data this cycle.</div>';
+  let html='';
+
+  if(cg.thinSubTeams&&cg.thinSubTeams.length){
+    html+='<div style="margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Thin Sub-Teams</div>';
+    html+='<div class="card" style="overflow:auto;margin-bottom:20px"><table class="data-table"><thead><tr><th>Sub-Team</th><th>Pillar</th><th style="text-align:center">Active Projects</th><th>Note</th></tr></thead><tbody>';
+    cg.thinSubTeams.forEach(t=>{html+=`<tr><td style="font-weight:600">${t.subTeam}</td><td>${t.pillar}</td><td style="text-align:center;font-weight:700">${t.activeProjects} <span class="coverage-warn">THIN</span></td><td class="why-cell">${t.note}</td></tr>`});
+    html+='</tbody></table></div>';
+  }
+
+  const up=cg.unassignedPeople;
+  if(up&&up.byTeam&&up.byTeam.length){
+    html+='<div style="margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Unassigned People</div>';
+    html+=`<div style="margin-bottom:12px;font-size:12px;color:var(--text-secondary);line-height:1.5">PCB Engineers &amp; PMs not currently a Champion, Aimer, or Contributor on any active roadmap project. Source: Vault team 1722 roster (${up.rosterSize} total) cross-referenced against ${up.activeProjectsScanned} active projects. Excludes Directors, Managers, Designers, Data Scientists/Engineers, Interns/Apprentices, PCB SLT, Hailey, Sofia, Anita. <strong>Note:</strong> Some ICs contribute to work not tracked on the roadmap (infra, enabling, unstaffed follow-ups) &mdash; use this as a starting list, not a final answer.</div>`;
+    html+=`<div class="drift-summary" style="margin-bottom:12px"><div class="drift-summary-card"><div class="drift-summary-num" style="color:var(--amber)">${up.totalUnassigned}</div><div class="drift-summary-label">Total Unassigned ICs</div></div><div class="drift-summary-card"><div class="drift-summary-num">${up.rosterSize}</div><div class="drift-summary-label">Total PCB Roster</div></div><div class="drift-summary-card"><div class="drift-summary-num">${up.activeProjectsScanned}</div><div class="drift-summary-label">Projects Scanned</div></div><div class="drift-summary-card"><div class="drift-summary-num">${Math.round(100*up.totalUnassigned/up.rosterSize)}%</div><div class="drift-summary-label">of Roster Unassigned</div></div></div>`;
+    up.byTeam.forEach(t=>{
+      const rows=t.people.map(p=>`<tr><td style="font-weight:600;white-space:nowrap">${p.person}</td><td style="color:var(--text-secondary)">${p.role}</td></tr>`).join('');
+      const badge=t.count>=20?'pill-red':t.count>=10?'pill-amber':'pill-gray';
+      html+=`<details class="card" style="margin-bottom:10px;padding:0"><summary style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:600;list-style:none"><i class="fas fa-chevron-right" style="font-size:10px;color:var(--text-muted);transition:transform .2s"></i><span>${t.team}</span><span class="pill ${badge}" style="margin-left:auto">${t.count} unassigned</span></summary><div style="padding:0 16px 16px"><table class="data-table" style="margin-top:8px"><thead><tr><th style="width:30%">Person</th><th>Role</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
+    });
+    html+='<style>details[open] > summary > .fa-chevron-right{transform:rotate(90deg)}details > summary::-webkit-details-marker{display:none}</style>';
+  }
+
+  return html||'<div class="empty">No coverage gap data this cycle.</div>';
+}
+
+function renderReviews(){
+  const e=commentary.overdueReviews||[];if(!e.length)return'<div class="empty">No overdue reviews. Rohit, Sadia, and Weiqing are caught up.</div>';
+  let h='<div style="margin-bottom:12px;font-size:12px;color:var(--text-secondary)">Reviews assigned to <strong>Rohit Mishra</strong>, <strong>Sadia Latifi</strong>, or <strong>Weiqing Tu</strong> pending more than 3 business days.</div>';
+  h+='<div class="card" style="overflow:auto"><table class="data-table"><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Role</th><th>Status</th><th>Days</th></tr></thead><tbody>';
+  e.sort((a,b)=>b.daysPending-a.daysPending);
+  e.forEach(r=>{const dCls=r.daysPending>=10?'pill-red':r.daysPending>=5?'pill-amber':'pill-gray';const sCls=r.reviewerStatus==='Blocking'?'pill-red':'pill-blue';h+=`<tr><td><a href="${r.url}" target="_blank">#${r.reviewId}</a></td><td style="font-weight:600">${r.project}</td><td>${r.reviewer}</td><td><span class="pill pill-purple">${r.role}</span></td><td><span class="pill ${sCls}">${r.reviewerStatus}</span></td><td style="text-align:center"><span class="pill ${dCls}">${r.daysPending}d</span></td></tr>`});
+  return h+'</tbody></table></div>';
+}
+
+function renderShipped(){
+  const e=commentary.shipped||[];
+  const twoWeeksAgo=new Date();twoWeeksAgo.setDate(twoWeeksAgo.getDate()-14);
+  const auto=allProjects.filter(p=>{
+    if(getPhase(p)!=='done'||!matchesHalf(p)||(p.rank||'').toUpperCase()==='N/A')return false;
+    if(!p.shipping)return false;
+    const d=new Date(p.shipping);return!isNaN(d)&&d>=twoWeeksAgo;
+  });
+  const byTeam={};auto.forEach(p=>{const t=p.team||'Other';if(!byTeam[t])byTeam[t]=[];byTeam[t].push(p)});
+  let h='';
+  const cf=e.filter(r=>r.note&&!r.note.includes('DRAFT')&&!r.note.includes('Pillar-level')&&!r.note.includes('Weeks in Build')&&!r.note.includes('unverified')&&!r.note.includes('transition context'));
+  if(cf.length){h+='<div style="margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">This Cycle\'s Wins</div><div class="shipped-grid">';cf.forEach(r=>{h+=`<div class="shipped-item">${r.note}</div>`});h+='</div>'}
+  const sel=selectedHalf==='all'?'All':selectedHalf;
+  h+=`<div style="margin-top:20px;margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">All ${sel} Projects at Done</div><div class="team-grid">`;
+  TEAM_ORDER.forEach(team=>{const ps=byTeam[team];if(!ps||!ps.length)return;const cfg=TEAM_CONFIG[team];h+=`<div class="card" style="padding:16px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:14px">${cfg.icon}</span><span style="font-weight:700;font-size:13px">${cfg.short||team}</span><span class="pill pill-green">${ps.length} done</span></div>`;ps.sort((a,b)=>(parseInt(a.rank)||999)-(parseInt(b.rank)||999));ps.forEach(p=>{const u=getVaultUrl(p.name);h+=`<div style="padding:4px 0;font-size:12px;display:flex;gap:8px;align-items:baseline"><span style="color:var(--text-muted);font-size:10px;min-width:24px">#${p.rank}</span>${u?`<a href="${u}" target="_blank" style="color:var(--text-primary);text-decoration:none;font-weight:500">${p.name}</a>`:`<span>${p.name}</span>`}${p.shipping?`<span style="color:var(--text-muted);font-size:10px;margin-left:auto">${p.shipping}</span>`:''}</div>`});h+='</div>'});
+  return h+'</div>';
+}
+
+function getCounts(){
+  const stuckCount=(commentary.stuckInPrototype||[]).length+(commentary.extendedBuild||[]).length;
+  const stalledCount=(commentary.stalledP1s||[]).length;
+  return{stuck:stuckCount,stalled:stalledCount,reviews:(commentary.overdueReviews||[]).length}
+}
+
+function navigate(viewId){
+  currentView=viewId;
+  const list=dedupeProjects(allProjects.filter(p=>matchesHalf(p)&&(p.rank||'').toUpperCase()!=='N/A'));
+  const renderers={perf:()=>renderPerf(list),drift:renderDrift,stuck:renderStuck,stalled:renderStalled,coverage:renderCoverage,reviews:renderReviews};
+  const sec=SECTIONS.find(s=>s.id===viewId);
+  document.getElementById('headerTitle').textContent=sec?sec.title:'Weekly Snapshot';
+  document.getElementById('content').innerHTML=(renderers[viewId]?renderers[viewId]():'')+'<div id="quickcomments" style="margin-top:24px"></div>';
+  document.querySelectorAll('#sectionNav .nav-sub-item').forEach(el=>{el.classList.toggle('active',el.dataset.view===viewId)});
+  history.replaceState(null,null,'#'+viewId);
+}
+
+function buildSectionNav(){
+  const counts=getCounts();
+  document.getElementById('sectionNav').innerHTML=SECTIONS.map(s=>{
+    const c=counts[s.id];const badge=c!==undefined?`<span class="nav-count">${c}</span>`:'';
+    return`<a href="#${s.id}" class="nav-sub-item" data-view="${s.id}" onclick="event.preventDefault();navigate('${s.id}')"><i class="fas ${s.icon}" style="color:${s.color}"></i><span class="nav-label">${s.title}</span>${badge}</a>`;
+  }).join('');
+}
+
+function render(){
+  document.getElementById('headerDate').textContent=commentary.reportDate?'Report: '+commentary.reportDate:'';
+  buildSectionNav();
+  const hash=(location.hash||'#perf').slice(1);
+  navigate(SECTIONS.find(s=>s.id===hash)?hash:'perf');
+}
+
+async function loadData(){
+  try{
+    const[pR,cR,dR]=await Promise.all([fetch('data/projects.json'),fetch('data/weekly-commentary.json'),fetch('data/timeline-drift.csv')]);
+    if(!pR.ok)throw new Error('Failed to load projects');
+    const pD=await pR.json();vaultUrls=pD.vaultUrls||{};allProjects=parseProjects(pD.rows);
+    if(cR.ok)commentary=await cR.json();
+    if(dR.ok){const csvText=await dR.text();driftCsvData=parseDriftCsv(csvText).filter(r=>{
+      const ms=(r.milestone||'').toLowerCase().trim();
+      // Only show release-facing milestone shifts (GA, LR, EA, Internal). Drop End Date entirely.
+      const allowed=['general availability','limited release','early access','internal','release'];
+      if(!allowed.includes(ms))return false;
+      const d=parseInt(r.days||'0',10);
+      return Math.abs(d)>7;
+    })}
+    render();
+  }catch(e){document.getElementById('content').innerHTML=`<div class="empty">Failed: ${e.message}</div>`}
+}
+
+window.addEventListener('hashchange',()=>{const h=(location.hash||'#perf').slice(1);if(SECTIONS.find(s=>s.id===h))navigate(h)});
+
+(function(){
+  const t=document.getElementById('darkModeToggle'),sb=document.getElementById('sidebarToggle'),s=document.getElementById('sidebar');
+  function ui(){const d=document.documentElement.getAttribute('data-theme')==='dark';const i=t?t.querySelector('i'):null;if(i)i.className=d?'fas fa-sun':'fas fa-moon'}
+  if(t){t.addEventListener('click',()=>{const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('pcb-theme',n);ui()});ui()}
+  if(sb&&s){if(localStorage.getItem('pcb-sidebar-collapsed')==='1')s.classList.add('collapsed');sb.addEventListener('click',()=>{s.classList.toggle('collapsed');localStorage.setItem('pcb-sidebar-collapsed',s.classList.contains('collapsed')?'1':'0')})}
+})();
+
+document.addEventListener('DOMContentLoaded',loadData);
+</script>
+</body>
+</html>
