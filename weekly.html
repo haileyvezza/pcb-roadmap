@@ -711,31 +711,10 @@ function renderStalled(){
 }
 
 function renderCoverage(){
-  const cg=commentary.coverageGaps;
-  if(!cg)return'<div class="empty">No coverage gap data this cycle.</div>';
-  let html='';
-
-  if(cg.thinSubTeams&&cg.thinSubTeams.length){
-    html+='<div style="margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Thin Sub-Teams</div>';
-    html+='<div class="card" style="overflow:auto;margin-bottom:20px"><table class="data-table"><thead><tr><th>Sub-Team</th><th>Pillar</th><th style="text-align:center">Active Projects</th><th>Note</th></tr></thead><tbody>';
-    cg.thinSubTeams.forEach(t=>{html+=`<tr><td style="font-weight:600">${t.subTeam}</td><td>${t.pillar}</td><td style="text-align:center;font-weight:700">${t.activeProjects} <span class="coverage-warn">THIN</span></td><td class="why-cell">${t.note}</td></tr>`});
-    html+='</tbody></table></div>';
-  }
-
-  const up=cg.unassignedPeople;
-  if(up&&up.byTeam&&up.byTeam.length){
-    html+='<div style="margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Unassigned People</div>';
-    html+=`<div style="margin-bottom:12px;font-size:12px;color:var(--text-secondary);line-height:1.5">PCB Engineers &amp; PMs not currently a Champion, Aimer, or Contributor on any active roadmap project. Source: Vault team 1722 roster (${up.rosterSize} total) cross-referenced against ${up.activeProjectsScanned} active projects. Excludes Directors, Managers, Designers, Data Scientists/Engineers, Interns/Apprentices, PCB SLT, Hailey, Sofia, Anita. <strong>Note:</strong> Some ICs contribute to work not tracked on the roadmap (infra, enabling, unstaffed follow-ups) &mdash; use this as a starting list, not a final answer.</div>`;
-    html+=`<div class="drift-summary" style="margin-bottom:12px"><div class="drift-summary-card"><div class="drift-summary-num" style="color:var(--amber)">${up.totalUnassigned}</div><div class="drift-summary-label">Total Unassigned ICs</div></div><div class="drift-summary-card"><div class="drift-summary-num">${up.rosterSize}</div><div class="drift-summary-label">Total PCB Roster</div></div><div class="drift-summary-card"><div class="drift-summary-num">${up.activeProjectsScanned}</div><div class="drift-summary-label">Projects Scanned</div></div><div class="drift-summary-card"><div class="drift-summary-num">${Math.round(100*up.totalUnassigned/up.rosterSize)}%</div><div class="drift-summary-label">of Roster Unassigned</div></div></div>`;
-    up.byTeam.forEach(t=>{
-      const rows=t.people.map(p=>`<tr><td style="font-weight:600;white-space:nowrap">${p.person}</td><td style="color:var(--text-secondary)">${p.role}</td></tr>`).join('');
-      const badge=t.count>=20?'pill-red':t.count>=10?'pill-amber':'pill-gray';
-      html+=`<details class="card" style="margin-bottom:10px;padding:0"><summary style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:600;list-style:none"><i class="fas fa-chevron-right" style="font-size:10px;color:var(--text-muted);transition:transform .2s"></i><span>${t.team}</span><span class="pill ${badge}" style="margin-left:auto">${t.count} unassigned</span></summary><div style="padding:0 16px 16px"><table class="data-table" style="margin-top:8px"><thead><tr><th style="width:30%">Person</th><th>Role</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
-    });
-    html+='<style>details[open] > summary > .fa-chevron-right{transform:rotate(90deg)}details > summary::-webkit-details-marker{display:none}</style>';
-  }
-
-  return html||'<div class="empty">No coverage gap data this cycle.</div>';
+  const cg=commentary.coverageGaps;if(!cg||!cg.thinSubTeams||!cg.thinSubTeams.length)return'<div class="empty">No coverage gap data this cycle.</div>';
+  let html='<div class="card" style="overflow:auto"><table class="data-table"><thead><tr><th>Sub-Team</th><th>Pillar</th><th style="text-align:center">Active Projects</th><th>Note</th></tr></thead><tbody>';
+  cg.thinSubTeams.forEach(t=>{html+=`<tr><td style="font-weight:600">${t.subTeam}</td><td>${t.pillar}</td><td style="text-align:center;font-weight:700">${t.activeProjects} <span class="coverage-warn">THIN</span></td><td class="why-cell">${t.note}</td></tr>`});
+  return html+'</tbody></table></div>';
 }
 
 function renderReviews(){
