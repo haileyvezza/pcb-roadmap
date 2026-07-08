@@ -15,7 +15,7 @@
     --bg-primary:  #f6f6f7;
     --bg-card:     #ffffff;
     --bg-input:    #f3f3f6;
-    --bg-sidebar:  #1a1a1f;
+    --bg-sidebar:  #ffffff;
     --border:      rgba(0,0,0,0.08);
     --border-hover: rgba(0,0,0,0.14);
     --text-primary: #1a1a1f;
@@ -36,7 +36,7 @@
     --bg-primary:  #101114;
     --bg-card:     #202227;
     --bg-input:    #292C32;
-    --bg-sidebar:  #050506;
+    --bg-sidebar:  #1a1a1f;
     --border:      rgba(252,252,253,0.08);
     --border-hover: rgba(252,252,253,0.15);
     --text-primary: #FCFCFD;
@@ -417,7 +417,7 @@
     flex-shrink: 0;
     transition: width 0.25s;
     overflow: hidden;
-    border-right: 1px solid rgba(255,255,255,0.05);
+    border-right: 1px solid var(--border);
   }
   .sidebar.collapsed { width: var(--sidebar-collapsed); }
   .sidebar-header {
@@ -425,27 +425,27 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--border);
     min-height: 56px;
   }
   .sidebar-brand { display: flex; align-items: center; gap: 10px; overflow: hidden; }
   .sidebar-logo { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
-  .sidebar-title { font-size: 13px; font-weight: 700; color: #fff; transition: opacity 0.2s; white-space: nowrap; }
+  .sidebar-title { font-size: 13px; font-weight: 700; color: var(--text-primary); transition: opacity 0.2s; white-space: nowrap; }
   .sidebar.collapsed .sidebar-title { opacity: 0; width: 0; }
   .sidebar-toggle {
-    background: none; border: none; color: rgba(255,255,255,0.4);
+    background: none; border: none; color: var(--text-muted);
     cursor: pointer; padding: 6px; border-radius: 6px; font-size: 11px;
   }
-  .sidebar-toggle:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+  .sidebar-toggle:hover { background: var(--bg-input); color: var(--text-primary); }
   .sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 0; }
   .sidebar.collapsed .sidebar-brand { display: none; }
   .sidebar-nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
   .sidebar-spacer { flex: 1; }
-  .sidebar-bottom { padding: 8px 8px 16px; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .sidebar-bottom { padding: 8px 8px 16px; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--border); }
   .nav-item {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 12px; border-radius: 8px; cursor: pointer;
-    color: rgba(255,255,255,0.5); transition: all 0.15s;
+    color: var(--text-secondary); transition: all 0.15s;
     white-space: nowrap; overflow: hidden;
     font-size: 13px; font-weight: 500;
     text-decoration: none; position: relative;
@@ -456,10 +456,16 @@
     border-radius: 0 2px 2px 0; background: var(--accent-green);
     transition: height 0.2s;
   }
-  .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-item:hover { background: var(--bg-input); color: var(--text-primary); }
   .nav-item:hover::before { height: 14px; }
-  .nav-item.active { background: rgba(0,136,255,0.15); color: var(--accent-green); font-weight: 600; }
+  .nav-item.active { background: rgba(0,136,255,0.08); color: var(--accent-green); font-weight: 600; }
   .nav-item.active::before { height: 20px; }
+  .nav-sub { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; }
+  .nav-sub-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px 7px 32px; border-radius: 8px; cursor: pointer; color: var(--text-muted); font-size: 12px; font-weight: 500; text-decoration: none; transition: all 0.15s; white-space: nowrap; overflow: hidden; }
+  .nav-sub-item:hover { background: var(--bg-input); color: var(--text-primary); }
+  .nav-sub-item.active { color: var(--accent-green); font-weight: 600; }
+  .nav-item.parent-active { color: var(--text-primary); }
+  .sidebar.collapsed .nav-sub { display: none; }
   .nav-item i { width: 16px; text-align: center; flex-shrink: 0; font-size: 13px; }
   .nav-label { transition: opacity 0.2s; }
   .sidebar.collapsed .nav-label { opacity: 0; width: 0; }
@@ -495,22 +501,40 @@
     <button class="sidebar-toggle" id="sidebarToggle" title="Collapse"><i class="fas fa-chevron-left"></i></button>
   </div>
   <div class="sidebar-nav">
-    <a href="index.html" class="nav-item">
-      <i class="fas fa-table-cells"></i>
-      <span class="nav-label">All Projects</span>
+    <a href="https://pcb-hub.quick.shopify.io/" class="nav-item">
+      <i class="fas fa-house"></i>
+      <span class="nav-label">PCB Hub</span>
     </a>
-    <a href="timeline.html" class="nav-item">
+    <a href="timeline.html" class="nav-item parent-active">
       <i class="fas fa-chart-gantt"></i>
-      <span class="nav-label">Timeline</span>
+      <span class="nav-label">Roadmap Calendar</span>
     </a>
-    <a href="themes.html" class="nav-item">
-      <i class="fas fa-layer-group"></i>
-      <span class="nav-label">By Theme</span>
-    </a>
-    <a href="slip.html" class="nav-item active">
-      <i class="fas fa-clock-rotate-left"></i>
-      <span class="nav-label">Slip</span>
-    </a>
+    <div class="nav-sub">
+      <a href="index.html" class="nav-sub-item">
+        <i class="fas fa-table-cells"></i>
+        <span class="nav-label">Roadmap</span>
+      </a>
+      <a href="themes.html" class="nav-sub-item">
+        <i class="fas fa-layer-group"></i>
+        <span class="nav-label">By Theme</span>
+      </a>
+      <a href="performance.html" class="nav-sub-item">
+        <i class="fas fa-chart-line"></i>
+        <span class="nav-label">Performance to Plan</span>
+      </a>
+      <a href="calendar.html" class="nav-sub-item">
+        <i class="fas fa-calendar-days"></i>
+        <span class="nav-label">Release Calendar</span>
+      </a>
+      <a href="slip.html" class="nav-sub-item active">
+        <i class="fas fa-clock-rotate-left"></i>
+        <span class="nav-label">Slip Insights</span>
+      </a>
+      <a href="weekly.html" class="nav-sub-item">
+        <i class="fas fa-bolt"></i>
+        <span class="nav-label">Weekly Snapshot</span>
+      </a>
+    </div>
   </div>
   <div class="sidebar-spacer"></div>
   <div class="sidebar-bottom">
@@ -553,7 +577,7 @@
       <span class="exec-icon">✓</span>
       <h4>What's Working</h4>
     </div>
-    <p><strong>Engineering is executing strong.</strong> In 4 of 5 major slipped projects, code is ready but the org isn't. Adyen Disputes has been code-complete since Nov. USDC Cashback TOS approved, code ready since Feb. Migrate Core Payment Methods shipped to EA, uncovering integration issues early. Teams are hitting their engineering milestones—the delays come after.</p>
+    <p><strong>Cross-border and payments foundations are landing.</strong> Managed Markets fully live in CA &amp; UK with Adaptive Pricing unblocked and 3DS rollout begun. Automated 3P provider transaction retry shipped at 100% with staff-shop testing live. Chargeback rate policy hit 100% coverage (406,253 active shops) and launched with Spring 2026 Editions. Card-Present Gateway merged 13 PRs and Stripe certification accounts are ready for pre-cert testing. Shop Pay Network Tokenization VGS contract reached agreement and is awaiting executive sign-off.</p>
   </div>
   
   <div class="exec-insight not-working">
@@ -561,14 +585,16 @@
       <span class="exec-icon">✗</span>
       <h4>What's Not</h4>
     </div>
-    <p><strong>Velocity losses are almost entirely in pre-build alignment and parallel work streams.</strong> Every major slip has a non-engineering dependency that could have started earlier:</p>
+    <p><strong>Partner API delivery and integration bugs are driving the biggest slips this cycle:</strong></p>
     <ul>
-      <li><strong>Coinbase amendment</strong> — blocking USDC Cashback (+44 days)</li>
-      <li><strong>Adyen contract/testing coordination</strong> — blocking Disputes (+122 days), KYB/KYC (+26 days)</li>
-      <li><strong>Global-e alignment</strong> — extended MM Adoption timeline (+58 days)</li>
-      <li><strong>Data migration complexity</strong> — Shop Pay Credit Cards to Global Vault (+126 days)</li>
+      <li><strong>Antom API delays</strong> — Shopify Payments Expansion EA +49d (Jun 12 → Jul 31); multiple Ant workstreams blocked on late API deliveries</li>
+      <li><strong>SPI Financing Package API</strong> — GA +90d (Apr 10 → Jul 9), End Date +95d; Affirm rollout coordination drove the slip</li>
+      <li><strong>US Onboarding integration</strong> — End Date +46d; E2E testing exposed bugs across Payments / Completeness Engine / Trust Battery blocking non-individual business types</li>
+      <li><strong>Shop Pay Network Tokenization</strong> — End Date +143d (Apr 28 → Sep 18); delayed VGS contract signing + backbook completion</li>
+      <li><strong>NITS classifier</strong> — End Date +142d (Mar 11 → Jul 31); HSTU leakage validation and Tangle pipeline rebuild</li>
+      <li><strong>INFORM compliance</strong> — GA +199d, End Date +207d; data pipeline failure since Jun 16 blocking Monday rollout</li>
     </ul>
-    <p>We're finishing code, then waiting weeks for signatures, partner testing slots, and decisions.</p>
+    <p>Pattern: partner API timelines and end-to-end testing surfacing late are compressing schedules into Q3.</p>
   </div>
   
   <div class="exec-insight pressure">
@@ -578,20 +604,24 @@
     </div>
     <div class="pressure-items">
       <div class="pressure-item">
-        <span class="pressure-tag partner">Coinbase</span>
-        <span>Amendment unsigned, blocking USDC Cashback launch</span>
+        <span class="pressure-tag process">Managed Markets</span>
+        <span>Convene MM alignment session — Payout Reconciliation Report ships partial because MM merchants are excluded; need committed fix + timeline from MM team</span>
       </div>
       <div class="pressure-item">
-        <span class="pressure-tag partner">Adyen</span>
-        <span>Testing coordination delays across 3 projects (Disputes, KYB/KYC, Credit Card Payments)</span>
+        <span class="pressure-tag process">Onboarding</span>
+        <span>US Payments Onboarding team named coordination as a blocker but didn't specify who/what — ask Ahmad Dandachi to name the dependency explicitly so it can be tracked</span>
       </div>
       <div class="pressure-item">
-        <span class="pressure-tag partner">Global-e</span>
-        <span>Alignment on MM Adoption rollout strategy, UK/CA market decisions</span>
+        <span class="pressure-tag process">Capacity</span>
+        <span>Buyer Risk ML retraining team lost ~¼ week to unplanned null-rate monitoring; protect remaining capacity or shadow runs + live evidence will slip</span>
       </div>
       <div class="pressure-item">
-        <span class="pressure-tag process">Process</span>
-        <span>Teams should scope with eng, design, <em>and partners</em> before prototype. MM Adoption, USDC Cashback, and multiple Adyen projects lost weeks discovering partnership/compliance requirements mid-build that were knowable at kickoff.</span>
+        <span class="pressure-tag partner">Affirm</span>
+        <span>SPI Financing Package API (+88–95d) and SPI in Australia both gated on Affirm — banner copy approval, 3DS behavior, identity verification fix all outstanding</span>
+      </div>
+      <div class="pressure-item">
+        <span class="pressure-tag partner">Antom</span>
+        <span>Multiple Antom workstreams blocked on late API deliveries — Provider Account Management on registration loop, Card payments paused for 1-week sprint</span>
       </div>
     </div>
   </div>

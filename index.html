@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-<title>Project Details — PCB Roadmap</title>
+<title>Roadmap — PCB</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,7 +15,7 @@
     --bg-primary:  #f6f6f7;
     --bg-card:     #ffffff;
     --bg-input:    #f3f3f6;
-    --bg-sidebar:  #1a1a1f;
+    --bg-sidebar:  #ffffff;
     --border:      rgba(0,0,0,0.08);
     --border-hover: rgba(0,0,0,0.14);
     --text-primary: #1a1a1f;
@@ -39,7 +39,7 @@
     --bg-primary:  #101114;
     --bg-card:     #202227;
     --bg-input:    #292C32;
-    --bg-sidebar:  #050506;
+    --bg-sidebar:  #1a1a1f;
     --border:      rgba(252,252,253,0.08);
     --border-hover: rgba(252,252,253,0.15);
     --text-primary: #FCFCFD;
@@ -88,41 +88,92 @@
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    padding: 0 16px;
-    gap: 8px;
+    padding: 0 12px;
+    gap: 5px;
     flex-shrink: 0;
-    overflow-x: auto;
+    overflow: visible;
   }
   #filter-bar select, #filter-bar input[type="text"] {
     background: var(--bg-input);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 5px;
     color: var(--text-primary);
-    font-size: 12px;
-    padding: 4px 8px;
+    font-size: 11px;
+    padding: 3px 6px;
     outline: none;
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
+    max-width: 110px;
   }
   #filter-bar select option { background: var(--bg-input); }
-  #search-input { width: 180px; flex-shrink: 0; }
-  .filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+  #search-input { width: 140px; flex-shrink: 0; max-width: none; }
+  .filter-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; }
   #clear-btn {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-muted);
     cursor: pointer;
     background: none;
     border: none;
-    padding: 4px 6px;
+    padding: 3px 5px;
     border-radius: 4px;
     flex-shrink: 0;
   }
   #clear-btn:hover { color: var(--text-primary); background: var(--bg-input); }
-  #row-count { font-size: 11px; color: var(--text-muted); margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+  #row-count { font-size: 10px; color: var(--text-muted); margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
+  /* Multi-select dropdown */
+  .multi-select-dropdown { position: relative; display: inline-block; flex-shrink: 0; }
+  .multi-select-trigger {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-size: 11px;
+    padding: 3px 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .multi-select-trigger:hover { border-color: var(--border-hover); }
+  .multi-select-trigger.active { border-color: var(--accent-green); background: var(--accent-green-dim); }
+  .dropdown-arrow { font-size: 9px; color: var(--text-muted); }
+  .multi-select-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 100;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    padding: 6px 0;
+    min-width: 180px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .multi-select-panel.open { display: block; }
+  .multi-select-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-primary);
+    user-select: none;
+  }
+  .multi-select-option:hover { background: var(--bg-input); }
+  .multi-select-option input[type="checkbox"] { accent-color: var(--accent-green); cursor: pointer; }
+  .multi-select-option.selected { background: var(--accent-green-dim); }
+  .multi-select-option.select-all { border-bottom: 1px solid var(--border); margin-bottom: 4px; padding-bottom: 8px; font-weight: 600; }
+  .multi-select-option.select-all.partial { color: var(--text-muted); }
 
   #table-wrap { flex: 1; overflow: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+  table { width: 100%; border-collapse: collapse; min-width: 1600px; }
   thead { position: sticky; top: 0; z-index: 10; }
   th {
     text-align: left;
@@ -155,10 +206,11 @@
   .muted-cell { color: var(--text-muted); }
   .col-name { min-width: 220px; max-width: 320px; }
   .proj-name-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
-  .proj-name-cell a { color: var(--accent); text-decoration: none; }
-  .proj-name-cell a:hover { text-decoration: underline; }
   a.proj-link { color: var(--text-primary); text-decoration: none; }
   a.proj-link:hover { color: var(--accent-green); text-decoration: underline; }
+  .vault-icon { font-size: 9px; margin-left: 4px; opacity: 0.5; }
+  a.proj-link:hover .vault-icon { opacity: 1; }
+  .not-on-vault { font-size: 10px; color: var(--text-muted); font-style: italic; }
 
   /* Priority badges */
   .priority-badge {
@@ -260,7 +312,7 @@
     transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     z-index: 100;
-    border-right: 1px solid rgba(255,255,255,0.05);
+    border-right: 1px solid var(--border);
   }
   .sidebar.collapsed { width: var(--sidebar-collapsed); }
   .sidebar-header {
@@ -268,7 +320,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--border);
     min-height: 56px;
   }
   .sidebar-brand {
@@ -279,14 +331,14 @@
     white-space: nowrap;
   }
   .sidebar-logo { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
-  .sidebar-title { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: -0.01em; transition: opacity 0.2s; white-space: nowrap; }
+  .sidebar-title { font-size: 13px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; transition: opacity 0.2s; white-space: nowrap; }
   .sidebar.collapsed .sidebar-title { opacity: 0; width: 0; }
   .sidebar-toggle {
-    background: none; border: none; color: rgba(255,255,255,0.4);
+    background: none; border: none; color: var(--text-muted);
     cursor: pointer; padding: 6px; border-radius: 6px;
     transition: all 0.15s; flex-shrink: 0; font-size: 11px;
   }
-  .sidebar-toggle:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+  .sidebar-toggle:hover { background: var(--bg-input); color: var(--text-primary); }
   .sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 0; }
   .sidebar.collapsed .sidebar-brand { display: none; }
   .sidebar-nav {
@@ -297,12 +349,12 @@
   .sidebar-bottom {
     padding: 8px 8px 16px;
     display: flex; flex-direction: column; gap: 2px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid var(--border);
   }
   .nav-item {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 12px; border-radius: 8px; cursor: pointer;
-    color: rgba(255,255,255,0.5); transition: all 0.15s;
+    color: var(--text-secondary); transition: all 0.15s;
     white-space: nowrap; overflow: hidden;
     font-size: 13px; font-weight: 500;
     text-decoration: none; position: relative;
@@ -313,9 +365,9 @@
     border-radius: 0 2px 2px 0; background: var(--accent-green);
     transition: height 0.2s;
   }
-  .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-item:hover { background: var(--bg-input); color: var(--text-primary); }
   .nav-item:hover::before { height: 14px; }
-  .nav-item.active { background: rgba(0,136,255,0.15); color: var(--accent-green); font-weight: 600; }
+  .nav-item.active { background: rgba(0,136,255,0.08); color: var(--accent-green); font-weight: 600; }
   .nav-item.active::before { height: 20px; }
   .nav-item i { width: 16px; text-align: center; flex-shrink: 0; font-size: 13px; }
   .nav-label { transition: opacity 0.2s; }
@@ -323,6 +375,12 @@
   .sidebar.collapsed .nav-item { justify-content: center; padding: 9px; gap: 0; }
   .sidebar.collapsed .sidebar-nav,
   .sidebar.collapsed .sidebar-bottom { padding-left: 0; padding-right: 0; align-items: center; }
+  .nav-sub { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; }
+  .nav-sub-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px 7px 32px; border-radius: 8px; cursor: pointer; color: var(--text-muted); font-size: 12px; font-weight: 500; text-decoration: none; transition: all 0.15s; white-space: nowrap; overflow: hidden; }
+  .nav-sub-item:hover { background: var(--bg-input); color: var(--text-primary); }
+  .nav-sub-item.active { color: var(--accent-green); font-weight: 600; }
+  .nav-item.parent-active { color: var(--text-primary); }
+  .sidebar.collapsed .nav-sub { display: none; }
 
   .main-content {
     flex: 1; min-width: 0;
@@ -353,10 +411,13 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .desc-cell {
-    max-width: 300px;
+    max-width: 320px;
+    min-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--text-secondary);
+    font-size: 12px;
   }
   .desc-cell:hover {
     white-space: normal;
@@ -367,6 +428,8 @@
     padding: 8px;
     border-radius: 4px;
     box-shadow: var(--shadow-lg);
+    max-width: 400px;
+    color: var(--text-primary);
   }
 
   .source-link {
@@ -393,22 +456,36 @@
     <button class="sidebar-toggle" id="sidebarToggle" title="Collapse"><i class="fas fa-chevron-left"></i></button>
   </div>
   <div class="sidebar-nav">
-    <a href="index.html" class="nav-item active">
-      <i class="fas fa-table-cells"></i>
-      <span class="nav-label">All Projects</span>
+    <a href="https://pcb-hub.quick.shopify.io/" class="nav-item">
+      <i class="fas fa-house"></i>
+      <span class="nav-label">PCB Hub</span>
     </a>
-    <a href="timeline.html" class="nav-item">
+    <a href="timeline.html" class="nav-item parent-active">
       <i class="fas fa-chart-gantt"></i>
-      <span class="nav-label">Timeline</span>
+      <span class="nav-label">Roadmap Calendar</span>
     </a>
-    <a href="themes.html" class="nav-item">
-      <i class="fas fa-layer-group"></i>
-      <span class="nav-label">By Theme</span>
-    </a>
-    <a href="slip.html" class="nav-item">
-      <i class="fas fa-clock-rotate-left"></i>
-      <span class="nav-label">Slip</span>
-    </a>
+    <div class="nav-sub">
+      <a href="index.html" class="nav-sub-item active">
+        <i class="fas fa-table-cells"></i>
+        <span class="nav-label">Roadmap</span>
+      </a>
+      <a href="themes.html" class="nav-sub-item">
+        <i class="fas fa-layer-group"></i>
+        <span class="nav-label">By Theme</span>
+      </a>
+      <a href="performance.html" class="nav-sub-item">
+        <i class="fas fa-chart-line"></i>
+        <span class="nav-label">Performance to Plan</span>
+      </a>
+      <a href="calendar.html" class="nav-sub-item">
+        <i class="fas fa-calendar-days"></i>
+        <span class="nav-label">Release Calendar</span>
+      </a>
+      <a href="weekly.html" class="nav-sub-item">
+        <i class="fas fa-bolt"></i>
+        <span class="nav-label">Weekly Snapshot</span>
+      </a>
+    </div>
   </div>
   <div class="sidebar-spacer"></div>
   <div class="sidebar-bottom">
@@ -426,7 +503,7 @@
 <div class="main-content">
 <header>
   <div class="header-left">
-    <span style="font-weight: 600; font-size: 15px;">PCB Stack Ranked 2026 H1 Priorities</span>
+    <span style="font-weight: 600; font-size: 15px;">PCB Stack Ranked 2026 H1 + H2 Priorities</span>
   </div>
   <div class="header-right">
     <button id="refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
@@ -436,27 +513,45 @@
 <div id="filter-bar">
   <input id="search-input" type="text" placeholder="Search projects…">
   <div class="filter-sep"></div>
-  <select id="filter-priority">
-    <option value="">All priorities</option>
-    <option value="P0">P0</option>
-    <option value="P1">P1</option>
-    <option value="P2">P2</option>
-    <option value="P3">P3</option>
-    <option value="P4">P4</option>
-  </select>
-  <select id="filter-half"><option value="">All halves</option></select>
-  <select id="filter-team"><option value="">All teams</option></select>
-  <select id="filter-subteam"><option value="">All sub teams</option></select>
-  <select id="filter-bigrock"><option value="">All big rocks</option></select>
-  <select id="filter-editions">
-    <option value="">All editions</option>
-    <option value="S26">S26 only</option>
-    <option value="W27">W27 only</option>
-    <option value="No">Not in Editions</option>
-  </select>
-  <select id="filter-tos"><option value="">All ToS status</option></select>
-  <select id="filter-partner"><option value="">All partner deps</option></select>
-  <select id="filter-status"><option value="">All statuses</option></select>
+  <div class="multi-select-dropdown" data-filter="priority">
+    <button type="button" class="multi-select-trigger">Priority <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="team">
+    <button type="button" class="multi-select-trigger">Team <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="theme">
+    <button type="button" class="multi-select-trigger">Theme <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="phase">
+    <button type="button" class="multi-select-trigger">Phase <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="status">
+    <button type="button" class="multi-select-trigger">Status <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="editions">
+    <button type="button" class="multi-select-trigger">Editions <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="partners">
+    <button type="button" class="multi-select-trigger">Partner <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="partnerTeams">
+    <button type="button" class="multi-select-trigger">Partner Teams <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <div class="multi-select-dropdown" data-filter="subTeam">
+    <button type="button" class="multi-select-trigger">Sub Team <span class="dropdown-arrow">▾</span></button>
+    <div class="multi-select-panel"></div>
+  </div>
+  <label id="show-done-label" title="Done projects are hidden by default — tick this to include them" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;margin-left:4px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);">
+    <input type="checkbox" id="show-done-toggle" style="cursor:pointer;margin:0;"> Show Done
+  </label>
   <button id="clear-btn">Clear</button>
   <span id="row-count"></span>
 </div>
@@ -464,6 +559,7 @@
 <div id="table-wrap">
   <div class="empty-state"><span class="loading-spinner"></span> Loading data from Google Sheets…</div>
 </div>
+<div id="stopped-section" style="padding:0 16px 24px;"></div>
 </div>
 
 </div>
@@ -479,7 +575,7 @@ const THEME_COLORS = {
   '~100% Shopify Payments': { bg: '#dbeafe', color: '#1d4ed8' },
   'Defend merchants and Shopify from bad actors': { bg: '#fee2e2', color: '#b91c1c' },
   'Set a new standard for baseline quality': { bg: '#dcfce7', color: '#15803d' },
-  'Gain sovereignty over our payments systems': { bg: '#fef3c7', color: '#b45309' },
+  'Own our Money Infra': { bg: '#fef3c7', color: '#b45309' },
   'Make Shop Pay the dominant buyer wallet for commerce': { bg: '#f3e8ff', color: '#7c3aed' },
   'Enable merchants to sell to buyers anywhere in the world': { bg: '#cffafe', color: '#0891b2' },
   'Shopify Payments Always On': { bg: '#fce7f3', color: '#be185d' },
@@ -489,15 +585,86 @@ const THEME_COLORS = {
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, P4: 4 };
 
 let allProjects = [];
-let filters = { search: '', priority: '', half: '', team: '', subteam: '', bigrock: '', editions: '', tos: '', partner: '', status: '' };
-let sortCol = 'rank', sortDir = 1;
+let vaultUrls = {};
+let filters = { 
+  search: '', 
+  half: [],
+  priority: [], 
+  team: [], 
+  theme: [], 
+  phase: [],
+  status: [], 
+  editions: [], 
+  partners: [],
+  partnerTeams: [],
+  subTeam: []
+};
+let sortCol = 'startDate', sortDir = 1;
+let showDone = false;
 
-function parseProjects(rows, vaultUrls) {
+// Helper used both for the Work Starts cell and for sorting:
+// prefer Vault's actual Starts when a Vault project is linked,
+// otherwise fall back to Ship Month from the sheet.
+function getWorkStarts(p) {
+  const hasVault = !!getVaultUrl(p.name);
+  return hasVault
+    ? (p.startDate || p.shipMonth || '')
+    : (p.shipMonth || p.startDate || '');
+}
+
+// Best-effort parse of human date strings (e.g. "Jul 1, 2026", "12/1/2026")
+// into a comparable timestamp. Free-text values fall back to +Infinity so
+// they sort last in ascending order.
+function parseSortableDate(s) {
+  if (!s) return Number.POSITIVE_INFINITY;
+  const d = new Date(s);
+  if (!isNaN(d)) return d.getTime();
+  return Number.POSITIVE_INFINITY;
+}
+
+function isDoneProject(p) {
+  const status = (p.status || '').toLowerCase();
+  if (status === 'done' || status === 'complete' || status === 'completed') return true;
+  const phase = (p.phase || '').toLowerCase();
+  if (phase === 'done' || phase === 'complete' || phase === 'completed') return true;
+  return false;
+}
+
+function isStoppedProject(p) {
+  const phase = (p.phase || '').toLowerCase();
+  if (phase === 'stopped' || phase === 'paused' || phase === 'blocked') return true;
+  const status = (p.status || '').toLowerCase();
+  if (status === 'stopped' || status === 'paused' || status === 'blocked') return true;
+  return false;
+}
+
+// Filter configuration
+const FILTER_CONFIG = {
+  half: { label: 'H', field: 'half', fixedOptions: ['H1', 'H2'] },
+  priority: { label: 'Priority', field: 'priority', fixedOptions: ['P0', 'P1', 'P2', 'P3', 'P4'] },
+  team: { label: 'Team', field: 'team', fixedOptions: [
+    { value: 'Money Movement', label: 'Money Movement' },
+    { value: 'Payments Platform & Risk', label: 'Payments Platform' },
+    { value: 'Cross Border', label: 'Cross Border' },
+    { value: 'Payments Experience', label: 'Payments Experience' },
+    { value: 'Shop Wallet', label: 'Shop Wallet' },
+    { value: 'Billing', label: 'Billing' },
+    { value: 'Taxes', label: 'Taxes' }
+  ]},
+  theme: { label: 'Theme', field: 'theme', dynamic: true },
+  phase: { label: 'Phase', field: 'phase', dynamic: true },
+  status: { label: 'Status', field: 'status', dynamic: true },
+  editions: { label: 'Editions', field: 'editions', fixedOptions: ['S26', 'W27', 'No'] },
+  partners: { label: 'Partner', field: 'partnerDependency', dynamic: true, excludeValues: ['no', ''] },
+  partnerTeams: { label: 'Partner Teams', field: 'partnerTeams', dynamic: true },
+  subTeam: { label: 'Sub Team', field: 'subTeam', dynamic: true }
+};
+
+function parseProjects(rows) {
   if (!rows || rows.length < 2) return [];
   const headers = rows[0];
   const colIndex = {};
   headers.forEach((h, i) => { colIndex[h.toLowerCase().trim()] = i; });
-  vaultUrls = vaultUrls || {};
 
   return rows.slice(1).map((row, idx) => {
     const get = (key) => {
@@ -516,7 +683,6 @@ function parseProjects(rows, vaultUrls) {
       priority: get('priority'),
       bigRock: get('pcb big rock'),
       name: project,
-      vaultUrl: vaultUrls[project] || '',
       description: get('description'),
       team: get('team'),
       subTeam: get('sub team') || get('subteam'),
@@ -528,6 +694,10 @@ function parseProjects(rows, vaultUrls) {
       needsToS: get('need tos /merchant comms'),
       dependencies: get('dependencies'),
       partnerDependency: get('partner dependency'),
+      partnerTeams: get('partner teams (internal)'),
+      vaultStatus: get('vault status'),
+      shipMonth: get('ship month'),
+      phase: get('phase'),
       status: get('status') || 'Unknown',
     };
   }).filter(p => p !== null);
@@ -543,39 +713,114 @@ function getFiltered() {
     (p.bigRock || '').toLowerCase().includes(q) ||
     (p.team || '').toLowerCase().includes(q)
   );
-  if (filters.priority) ps = ps.filter(p => p.priority === filters.priority);
-  if (filters.half) ps = ps.filter(p => p.half === filters.half);
-  if (filters.team) ps = ps.filter(p => p.team === filters.team);
-  if (filters.subteam) ps = ps.filter(p => p.subTeam === filters.subteam);
-  if (filters.bigrock) ps = ps.filter(p => p.bigRock === filters.bigrock);
-  if (filters.editions) {
-    if (filters.editions === 'S26') {
-      ps = ps.filter(p => (p.editions || '').toUpperCase().includes('S26'));
-    } else if (filters.editions === 'W27') {
-      ps = ps.filter(p => (p.editions || '').toUpperCase().includes('W27'));
-    } else if (filters.editions === 'No') {
-      ps = ps.filter(p => (p.editions || '').toUpperCase() === 'NO' || !p.editions);
-    }
+  
+  // H (H1/H2) filter (array)
+  if (filters.half.length > 0) {
+    ps = ps.filter(p => filters.half.includes(p.half));
   }
-  if (filters.tos) ps = ps.filter(p => (p.needsToS || '').toLowerCase().includes(filters.tos.toLowerCase()));
-  if (filters.partner) ps = ps.filter(p => (p.partnerDependency || '').toLowerCase().includes(filters.partner.toLowerCase()));
-  if (filters.status) ps = ps.filter(p => p.status.toLowerCase() === filters.status.toLowerCase());
+
+  // Priority filter (array)
+  if (filters.priority.length > 0) {
+    ps = ps.filter(p => filters.priority.includes(p.priority));
+  }
+  
+  // Team filter (array with partial match)
+  if (filters.team.length > 0) {
+    ps = ps.filter(p => filters.team.some(t => (p.team || '').includes(t)));
+  }
+  
+  // Theme filter (array)
+  if (filters.theme.length > 0) {
+    ps = ps.filter(p => filters.theme.includes(p.theme));
+  }
+  
+  // Phase filter (array)
+  if (filters.phase.length > 0) {
+    ps = ps.filter(p => filters.phase.some(s => s.toLowerCase() === (p.phase || '').toLowerCase()));
+  }
+
+  // Status filter (array)
+  if (filters.status.length > 0) {
+    ps = ps.filter(p => filters.status.some(s => s.toLowerCase() === (p.status || '').toLowerCase()));
+  }
+  
+  // Editions filter (array with special handling)
+  if (filters.editions.length > 0) {
+    ps = ps.filter(p => {
+      const ed = (p.editions || '').toUpperCase();
+      return filters.editions.some(f => {
+        if (f === 'S26') return ed.includes('S26');
+        if (f === 'W27') return ed.includes('W27');
+        if (f === 'No') return ed === 'NO' || !p.editions;
+        return false;
+      });
+    });
+  }
+  
+  // Partners filter (array). Match individual partners exactly so that
+  // selecting "Ant" doesn't also surface "Antom" projects.
+  if (filters.partners.length > 0) {
+    ps = ps.filter(p => {
+      const projectPartners = (p.partnerDependency || '')
+        .split(',')
+        .map(v => v.trim().toLowerCase())
+        .filter(Boolean);
+      return filters.partners.some(fp => projectPartners.includes(fp.toLowerCase()));
+    });
+  }
+
+  // Partner Teams (Internal) filter (array, comma-separated values)
+  if (filters.partnerTeams.length > 0) {
+    ps = ps.filter(p => {
+      const tokens = (p.partnerTeams || '')
+        .split(',')
+        .map(v => v.trim().toLowerCase())
+        .filter(Boolean);
+      return filters.partnerTeams.some(ft => tokens.includes(ft.toLowerCase()));
+    });
+  }
+
+  // Sub Team filter (array)
+  if (filters.subTeam.length > 0) {
+    ps = ps.filter(p => filters.subTeam.some(s => s.toLowerCase() === (p.subTeam || '').toLowerCase()));
+  }
+
+  // Hide Done items unless the user explicitly opts in
+  if (!showDone) {
+    ps = ps.filter(p => !isDoneProject(p));
+  }
+
+  // Stopped work is surfaced in its own section below the table — never in the main list.
+  ps = ps.filter(p => !isStoppedProject(p));
 
   ps.sort((a, b) => {
     let va, vb;
     if (sortCol === 'rank') { va = a.rank; vb = b.rank; return (va - vb) * sortDir; }
+    if (sortCol === 'half') { va = a.half || ''; vb = b.half || ''; return va.localeCompare(vb) * sortDir; }
     if (sortCol === 'priority') {
       va = PRIORITY_ORDER[a.priority] ?? 99;
       vb = PRIORITY_ORDER[b.priority] ?? 99;
       return (va - vb) * sortDir;
     }
+    if (sortCol === 'startDate') {
+      // Sort by the effective Work Starts value (Ship Month fallback for non-Vault projects)
+      const da = parseSortableDate(getWorkStarts(a));
+      const db = parseSortableDate(getWorkStarts(b));
+      return (da - db) * sortDir;
+    }
+    if (sortCol === 'shipping') {
+      const da = parseSortableDate(a.shipping);
+      const db = parseSortableDate(b.shipping);
+      return (da - db) * sortDir;
+    }
     if (sortCol === 'name') { va = a.name; vb = b.name; }
+    else if (sortCol === 'theme') { va = a.theme; vb = b.theme; }
     else if (sortCol === 'team') { va = a.team; vb = b.team; }
     else if (sortCol === 'subTeam') { va = a.subTeam; vb = b.subTeam; }
     else if (sortCol === 'champion') { va = a.champion; vb = b.champion; }
-    else if (sortCol === 'shipping') { va = a.shipping; vb = b.shipping; }
     else if (sortCol === 'partnerDependency') { va = a.partnerDependency; vb = b.partnerDependency; }
     else if (sortCol === 'status') { va = a.status; vb = b.status; }
+    else if (sortCol === 'phase') { va = a.phase; vb = b.phase; }
     else { va = a.name; vb = b.name; }
     return (va || '').localeCompare(vb || '') * sortDir;
   });
@@ -584,35 +829,89 @@ function getFiltered() {
 }
 
 function buildFilterOptions() {
-  const halves = [...new Set(allProjects.map(p => p.half).filter(Boolean))].sort();
-  const teams = [...new Set(allProjects.map(p => p.team).filter(Boolean))].sort();
-  const subteams = [...new Set(allProjects.map(p => p.subTeam).filter(Boolean))].sort();
-  const bigrocks = [...new Set(allProjects.map(p => p.bigRock).filter(v => v && v !== 'N/A'))].sort();
-  const statuses = [...new Set(allProjects.map(p => p.status).filter(Boolean))].sort();
-  const tosVals = [...new Set(allProjects.map(p => p.needsToS).filter(Boolean))].sort();
-  const partners = [...new Set(allProjects.map(p => p.partnerDependency).filter(Boolean))].sort();
+  // Get dynamic values from data
+  const dynamicValues = {
+    theme: [...new Set(allProjects.map(p => p.theme).filter(Boolean))].sort(),
+    phase: [...new Set(allProjects.map(p => p.phase).filter(Boolean))].sort(),
+    status: [...new Set(allProjects.map(p => p.status).filter(Boolean))].sort(),
+    partners: [...new Set(
+      allProjects
+        .flatMap(p => (p.partnerDependency || '').split(','))
+        .map(v => v.trim())
+        .filter(v => v && v.toLowerCase() !== 'no')
+        // Exclude long free-text descriptions (not partner names)
+        .filter(v => v.length <= 35 && !/[.!?]/.test(v))
+    )].sort(),
+    partnerTeams: [...new Set(
+      allProjects
+        .flatMap(p => (p.partnerTeams || '').split(','))
+        .map(v => v.trim())
+        .filter(v => v && v.length <= 35 && !/[.!?]/.test(v))
+    )].sort(),
+    subTeam: [...new Set(
+      allProjects
+        .map(p => (p.subTeam || '').trim())
+        .filter(Boolean)
+    )].sort()
+  };
 
-  [
-    ['filter-half', halves, 'All halves'],
-    ['filter-team', teams, 'All teams'],
-    ['filter-subteam', subteams, 'All sub teams'],
-    ['filter-bigrock', bigrocks, 'All big rocks'],
-    ['filter-status', statuses, 'All statuses'],
-    ['filter-tos', tosVals, 'All ToS status'],
-    ['filter-partner', partners, 'All partner deps'],
-  ].forEach(([id, vals, placeholder]) => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const cur = sel.value;
-    sel.innerHTML = `<option value="">${placeholder}</option>`;
-    vals.forEach(v => {
-      const o = document.createElement('option');
-      o.value = v;
-      o.textContent = v.length > 30 ? v.substring(0, 30) + '…' : v;
-      sel.appendChild(o);
-    });
-    sel.value = cur;
+  // Build each multi-select dropdown
+  document.querySelectorAll('.multi-select-dropdown[data-filter]').forEach(dropdown => {
+    const filterKey = dropdown.dataset.filter;
+    const config = FILTER_CONFIG[filterKey];
+    if (!config) return;
+    
+    const panel = dropdown.querySelector('.multi-select-panel');
+    if (!panel) return;
+    
+    let options = [];
+    if (config.fixedOptions) {
+      options = config.fixedOptions.map(opt => 
+        typeof opt === 'object' ? opt : { value: opt, label: opt }
+      );
+    } else if (config.dynamic && dynamicValues[filterKey]) {
+      options = dynamicValues[filterKey].map(v => ({ value: v, label: v.length > 35 ? v.substring(0, 35) + '…' : v }));
+    }
+    
+    const selectedVals = filters[filterKey] || [];
+    const allSelected = options.length > 0 && selectedVals.length === options.length;
+    const someSelected = selectedVals.length > 0 && selectedVals.length < options.length;
+    
+    panel.innerHTML = `
+      <label class="multi-select-option select-all ${someSelected ? 'partial' : ''} ${allSelected ? 'selected' : ''}">
+        <input type="checkbox" value="__all__" ${allSelected ? 'checked' : ''} ${someSelected ? 'data-partial="true"' : ''}>Select All
+      </label>
+      ${options.map(opt => 
+        `<label class="multi-select-option${selectedVals.includes(opt.value) ? ' selected' : ''}">
+          <input type="checkbox" value="${opt.value}" ${selectedVals.includes(opt.value) ? 'checked' : ''}>${opt.label}
+        </label>`
+      ).join('')}
+    `;
+    
+    updateTriggerText(dropdown, filterKey);
   });
+}
+
+function updateTriggerText(dropdown, filterKey) {
+  const trigger = dropdown.querySelector('.multi-select-trigger');
+  const config = FILTER_CONFIG[filterKey];
+  if (!trigger || !config) return;
+  
+  const selected = filters[filterKey] || [];
+  if (selected.length === 0) {
+    trigger.innerHTML = `${config.label} <span class="dropdown-arrow">▾</span>`;
+    trigger.classList.remove('active');
+  } else if (selected.length === 1) {
+    const label = config.fixedOptions 
+      ? (config.fixedOptions.find(o => (typeof o === 'object' ? o.value : o) === selected[0])?.label || selected[0])
+      : selected[0];
+    const displayLabel = typeof label === 'string' && label.length > 12 ? label.substring(0, 12) + '…' : label;
+    trigger.innerHTML = `${displayLabel} <span class="dropdown-arrow">▾</span>`;
+    trigger.classList.add('active');
+  } else {
+    trigger.innerHTML = `${selected.length} ${config.label.toLowerCase()} <span class="dropdown-arrow">▾</span>`;
+    trigger.classList.add('active');
+  }
 }
 
 function getPriorityClass(p) {
@@ -635,6 +934,16 @@ function getStatusClass(s) {
   return '';
 }
 
+function getPhaseClass(p) {
+  const ph = (p || '').toLowerCase().replace(/_/g, '-');
+  if (ph === 'done' || ph === 'completed' || ph === 'complete') return 'status-complete';
+  if (ph === 'build' || ph === 'in-progress' || ph === 'release' || ph === 'observe') return 'status-in-progress';
+  if (ph === 'stopped' || ph === 'blocked') return 'status-stopped';
+  if (ph === 'backlog' || ph === 'planned') return 'status-backlog';
+  if (ph === 'paused') return 'status-paused';
+  return '';
+}
+
 function getEditionsBadge(e) {
   const ed = (e || '').trim().toUpperCase();
   if (ed.includes('S26')) return '<span class="editions-badge editions-s26">S26</span>';
@@ -649,28 +958,54 @@ function getThemePill(theme) {
   return `<span class="theme-pill" style="background:${colors.bg};color:${colors.color}" title="${theme}">${theme}</span>`;
 }
 
+function getVaultUrl(projectName) {
+  if (!projectName || !vaultUrls) return null;
+  // Direct match
+  if (vaultUrls[projectName]) return vaultUrls[projectName];
+  // Try case-insensitive match
+  const lowerName = projectName.toLowerCase();
+  for (const [key, url] of Object.entries(vaultUrls)) {
+    if (key.toLowerCase() === lowerName) return url;
+  }
+  // Try partial match (project name contains key or key contains project name)
+  for (const [key, url] of Object.entries(vaultUrls)) {
+    if (lowerName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerName)) {
+      return url;
+    }
+  }
+  return null;
+}
+
 function render() {
   const wrap = document.getElementById('table-wrap');
   const ps = getFiltered();
-  document.getElementById('row-count').textContent = `${ps.length} of ${allProjects.length}`;
+  const doneCount = allProjects.filter(isDoneProject).length;
+  const stoppedCount = allProjects.filter(isStoppedProject).length;
+  const rcEl = document.getElementById('row-count');
+  const hints = [];
+  if (!showDone && doneCount > 0) hints.push(`${doneCount} Done hidden`);
+  if (stoppedCount > 0) hints.push(`${stoppedCount} Stopped in section below`);
+  const hint = hints.length ? ` <span style="color:var(--text-muted);font-style:italic;">· ${hints.join(' · ')}</span>` : '';
+  rcEl.innerHTML = `${ps.length} of ${allProjects.length}${hint}`;
 
   if (!ps.length) {
     wrap.innerHTML = '<div class="empty-state">No projects match the current filters.</div>';
+    renderStoppedSection();
     return;
   }
 
   const colDef = [
-    { key: 'rank', label: '#', sort: true },
     { key: 'priority', label: 'Priority', sort: true },
     { key: 'name', label: 'Project', sort: true },
+    { key: 'phase', label: 'Phase', sort: true },
+    { key: 'status', label: 'Status', sort: true },
     { key: 'team', label: 'Team', sort: true },
+    { key: 'startDate', label: 'Work Starts', sort: true },
+    { key: 'shipping', label: 'Target GA', sort: true },
+    { key: 'editions', label: 'Editions', sort: false },
     { key: 'subTeam', label: 'Sub Team', sort: true },
     { key: 'champion', label: 'Champion', sort: true },
-    { key: 'shipping', label: 'Ships', sort: true },
-    { key: 'status', label: 'Status', sort: true },
-    { key: 'editions', label: 'Editions', sort: false },
     { key: 'partnerDependency', label: 'Partner', sort: true },
-    { key: 'needsToS', label: 'ToS/Comms', sort: false },
   ];
 
   const thead = `<thead><tr>${colDef.map(c =>
@@ -682,24 +1017,37 @@ function render() {
   const rows = ps.map(p => {
     const prioClass = getPriorityClass(p.priority);
     const statusClass = getStatusClass(p.status);
-    const partnerVal = (p.partnerDependency || '').toLowerCase();
-    const hasPartner = partnerVal && partnerVal !== 'no';
+    const phaseClass = getPhaseClass(p.phase);
+    const partnerList = (p.partnerDependency || '')
+      .split(',')
+      .map(v => v.trim())
+      .filter(v => v && v.toLowerCase() !== 'no');
+    const hasPartner = partnerList.length > 0;
+    const partnerBadgesHtml = partnerList
+      .map(v => `<span class="partner-badge">${v}</span>`)
+      .join(' ');
+    const vaultUrl = getVaultUrl(p.name);
+    const projectNameHtml = vaultUrl 
+      ? `<a href="${vaultUrl}" target="_blank" class="proj-link" title="${p.name}">${p.name} <i class="fas fa-external-link-alt vault-icon"></i></a>`
+      : `<span title="${p.name}">${p.name}</span> <span class="not-on-vault">(not on vault)</span>`;
     
+    // Work Starts: if there's no Vault project linked, fall back to Ship Month
+    const workStarts = getWorkStarts(p);
     return `<tr>
-      <td class="muted-cell">${p.rank !== 999 ? p.rank : '—'}</td>
       <td>${p.priority ? `<span class="priority-badge ${prioClass}">${p.priority}</span>` : '<span class="muted-cell">—</span>'}</td>
       <td class="col-name">
-        <div class="proj-name-cell" title="${p.name}">${p.vaultUrl ? `<a href="${p.vaultUrl}" target="_blank" rel="noopener">${p.name}</a>` : p.name}</div>
+        <div class="proj-name-cell">${projectNameHtml}</div>
         ${p.bigRock && p.bigRock !== 'N/A' ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${p.bigRock}</div>` : ''}
       </td>
+      <td>${p.phase ? `<span class="status-badge ${phaseClass}">${p.phase.replace(/_/g,' ')}</span>` : '<span class="muted-cell">—</span>'}</td>
+      <td>${p.status && p.status !== 'Unknown' ? `<span class="status-badge ${statusClass}">${p.status}</span>` : '<span class="muted-cell">—</span>'}</td>
       <td><span class="team-badge">${p.team || '—'}</span></td>
+      <td class="muted-cell">${workStarts || '—'}</td>
+      <td class="muted-cell">${p.shipping || '—'}</td>
+      <td>${getEditionsBadge(p.editions)}</td>
       <td class="muted-cell">${p.subTeam || '—'}</td>
       <td class="muted-cell">${p.champion || '—'}</td>
-      <td class="muted-cell">${p.shipping || '—'}</td>
-      <td>${p.status && p.status !== 'Unknown' ? `<span class="status-badge ${statusClass}">${p.status}</span>` : '<span class="muted-cell">—</span>'}</td>
-      <td>${getEditionsBadge(p.editions)}</td>
-      <td>${hasPartner ? `<span class="partner-badge">${p.partnerDependency}</span>` : '<span class="muted-cell">—</span>'}</td>
-      <td class="muted-cell">${p.needsToS || '—'}</td>
+      <td>${hasPartner ? partnerBadgesHtml : '<span class="muted-cell">—</span>'}</td>
     </tr>`;
   }).join('');
 
@@ -713,35 +1061,160 @@ function render() {
       render();
     });
   });
+
+  renderStoppedSection();
+}
+
+function renderStoppedSection() {
+  const el = document.getElementById('stopped-section');
+  if (!el) return;
+  const stopped = allProjects
+    .filter(isStoppedProject)
+    .sort((a, b) => {
+      const pa = PRIORITY_ORDER[a.priority] ?? 99;
+      const pb = PRIORITY_ORDER[b.priority] ?? 99;
+      if (pa !== pb) return pa - pb;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  if (!stopped.length) { el.innerHTML = ''; return; }
+  const rows = stopped.map(p => {
+    const prioClass = getPriorityClass(p.priority);
+    const phase = p.phase || p.status || 'Stopped';
+    const vaultUrl = getVaultUrl(p.name);
+    const nameHtml = vaultUrl
+      ? `<a href="${vaultUrl}" target="_blank" class="proj-link" title="${p.name}">${p.name} <i class="fas fa-external-link-alt vault-icon"></i></a>`
+      : `<span title="${p.name}">${p.name}</span>`;
+    return `<tr style="opacity:0.75;">
+      <td>${p.priority ? `<span class="priority-badge ${prioClass}">${p.priority}</span>` : '<span class="muted-cell">—</span>'}</td>
+      <td class="col-name">${nameHtml}</td>
+      <td><span class="status-badge status-stopped">${phase.replace(/_/g,' ')}</span></td>
+      <td><span class="team-badge">${p.team || '—'}</span></td>
+      <td class="muted-cell">${p.subTeam || '—'}</td>
+      <td class="muted-cell">${p.champion || '—'}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `
+    <details style="margin-top:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;">
+      <summary style="cursor:pointer;padding:12px 16px;font-weight:600;font-size:13px;color:var(--text-primary);list-style:none;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-ban" style="color:#ef4444;font-size:12px;"></i>
+        Stopped Work
+        <span style="font-size:11px;color:var(--text-muted);font-weight:500;">${stopped.length} project${stopped.length !== 1 ? 's' : ''}</span>
+        <i class="fas fa-chevron-down" style="margin-left:auto;font-size:10px;color:var(--text-muted);"></i>
+      </summary>
+      <div style="padding:0 16px 16px;">
+        <table style="width:100%;">
+          <thead><tr><th>Priority</th><th>Project</th><th>Phase</th><th>Team</th><th>Sub Team</th><th>Champion</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </details>
+  `;
 }
 
 // Filter events
 document.getElementById('search-input').addEventListener('input', e => {
   filters.search = e.target.value.trim(); render();
 });
-[
-  ['filter-priority', 'priority'],
-  ['filter-half', 'half'],
-  ['filter-team', 'team'],
-  ['filter-subteam', 'subteam'],
-  ['filter-bigrock', 'bigrock'],
-  ['filter-editions', 'editions'],
-  ['filter-tos', 'tos'],
-  ['filter-partner', 'partner'],
-  ['filter-status', 'status'],
-].forEach(([id, key]) => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('change', e => {
-    filters[key] = e.target.value; render();
+
+const showDoneEl = document.getElementById('show-done-toggle');
+if (showDoneEl) {
+  showDoneEl.addEventListener('change', e => {
+    showDone = e.target.checked;
+    render();
   });
-});
+}
+
+// Multi-select dropdown setup
+let dropdownsInitialized = false;
+function setupMultiSelectDropdowns() {
+  if (dropdownsInitialized) return;
+  dropdownsInitialized = true;
+  
+  // Handle clicks on dropdowns
+  document.querySelectorAll('.multi-select-dropdown[data-filter]').forEach(dropdown => {
+    const filterKey = dropdown.dataset.filter;
+    
+    dropdown.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.multi-select-trigger');
+      if (trigger) {
+        e.stopPropagation();
+        // Close other dropdowns
+        document.querySelectorAll('.multi-select-panel.open').forEach(p => {
+          if (p !== dropdown.querySelector('.multi-select-panel')) p.classList.remove('open');
+        });
+        dropdown.querySelector('.multi-select-panel')?.classList.toggle('open');
+        return;
+      }
+      
+      // Handle checkbox changes
+      const checkbox = e.target.closest('input[type="checkbox"]');
+      if (checkbox) {
+        const val = checkbox.value;
+        const panel = dropdown.querySelector('.multi-select-panel');
+        const allCheckboxes = panel.querySelectorAll('input[type="checkbox"]:not([value="__all__"])');
+        const selectAllCheckbox = panel.querySelector('input[value="__all__"]');
+        
+        if (val === '__all__') {
+          // Select All clicked
+          const shouldSelect = checkbox.checked;
+          allCheckboxes.forEach(cb => {
+            cb.checked = shouldSelect;
+            cb.closest('.multi-select-option').classList.toggle('selected', shouldSelect);
+          });
+          filters[filterKey] = shouldSelect ? Array.from(allCheckboxes).map(cb => cb.value) : [];
+          checkbox.closest('.multi-select-option').classList.toggle('selected', shouldSelect);
+          checkbox.closest('.multi-select-option').classList.remove('partial');
+        } else {
+          // Individual item clicked
+          if (checkbox.checked) {
+            if (!filters[filterKey].includes(val)) filters[filterKey].push(val);
+          } else {
+            filters[filterKey] = filters[filterKey].filter(v => v !== val);
+          }
+          checkbox.closest('.multi-select-option').classList.toggle('selected', checkbox.checked);
+          
+          // Update Select All state
+          const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+          const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+          if (selectAllCheckbox) {
+            selectAllCheckbox.checked = allChecked;
+            const selectAllOption = selectAllCheckbox.closest('.multi-select-option');
+            selectAllOption.classList.toggle('selected', allChecked);
+            selectAllOption.classList.toggle('partial', someChecked && !allChecked);
+          }
+        }
+        
+        updateTriggerText(dropdown, filterKey);
+        render();
+      }
+    });
+  });
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.multi-select-dropdown')) {
+      document.querySelectorAll('.multi-select-panel.open').forEach(p => p.classList.remove('open'));
+    }
+  });
+}
+
 document.getElementById('clear-btn').addEventListener('click', () => {
-  filters = { search: '', priority: '', half: '', team: '', subteam: '', bigrock: '', editions: '', tos: '', partner: '', status: '' };
+  filters = { search: '', half: [], priority: [], team: [], theme: [], phase: [], status: [], editions: [], partners: [], partnerTeams: [], subTeam: [] };
   document.getElementById('search-input').value = '';
-  ['filter-priority', 'filter-half', 'filter-team', 'filter-subteam', 'filter-bigrock', 'filter-editions', 'filter-tos', 'filter-partner', 'filter-status'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+  showDone = false;
+  const showDoneToggle = document.getElementById('show-done-toggle');
+  if (showDoneToggle) showDoneToggle.checked = false;
+  
+  // Reset all multi-select dropdowns
+  document.querySelectorAll('.multi-select-dropdown[data-filter]').forEach(dropdown => {
+    const filterKey = dropdown.dataset.filter;
+    dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      cb.closest('.multi-select-option').classList.remove('selected', 'partial');
+    });
+    updateTriggerText(dropdown, filterKey);
   });
+  
   render();
 });
 
@@ -757,8 +1230,20 @@ async function loadData() {
     const response = await fetch('data/projects.json');
     if (!response.ok) throw new Error('Failed to load data');
     const data = await response.json();
-    allProjects = parseProjects(data.rows, data.vaultUrls || {});
+    vaultUrls = data.vaultUrls || {};
+    allProjects = parseProjects(data.rows);
     buildFilterOptions();
+    setupMultiSelectDropdowns();
+    
+    // Check for URL search parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+      filters.search = searchParam;
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.value = searchParam;
+    }
+    
     render();
   } catch (e) {
     wrap.innerHTML = `<div class="empty-state">Failed to load data: ${e.message}<br><br>

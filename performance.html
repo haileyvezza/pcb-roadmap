@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-<title>H1 Performance to Plan — PCB Roadmap</title>
+<title>Performance to Plan — PCB Roadmap</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -134,8 +134,19 @@
     padding: 0 24px; flex-shrink: 0; height: 52px;
   }
   .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
   .header-title { font-weight: 700; font-size: 15px; }
   .header-count { font-size: 12px; color: var(--text-muted); background: var(--bg-input); padding: 2px 8px; border-radius: 10px; }
+
+  /* H1/H2/All toggle */
+  .type-toggle { display: flex; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .type-toggle button { padding: 4px 10px; font-size: 12px; font-weight: 500; color: var(--text-muted); background: transparent; border: none; cursor: pointer; transition: background .15s, color .15s; white-space: nowrap; }
+  .type-toggle button:not(:last-child) { border-right: 1px solid var(--border); }
+  .type-toggle button:hover { background: var(--border); color: var(--text-primary); }
+  .type-toggle button.active { background: var(--accent); color: #fff; }
+  [data-theme="dark"] .type-toggle { background: var(--bg-input); border-color: var(--border); }
+  [data-theme="dark"] .type-toggle button { color: var(--text-secondary); }
+  [data-theme="dark"] .type-toggle button:not(:last-child) { border-color: var(--border); }
 
   .content-wrap {
     flex: 1; overflow-y: auto; padding: 20px 24px;
@@ -300,6 +311,151 @@
     text-transform: capitalize;
   }
 
+  .priority-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 28px;
+    text-align: center;
+  }
+  .priority-pill.p0 { background: rgba(239,68,68,0.12); color: #dc2626; }
+  .priority-pill.p1 { background: rgba(245,158,11,0.12); color: #d97706; }
+  .priority-pill.p2 { background: rgba(59,130,246,0.10); color: #2563eb; }
+  .priority-pill.p3 { background: var(--bg-input); color: var(--text-secondary); }
+  .priority-pill.p4 { background: var(--bg-input); color: var(--text-muted); }
+  .priority-pill.none { background: transparent; color: var(--text-muted); }
+
+  /* Pull project text closer to left edge */
+  .projects-table th:first-child,
+  .projects-table td:first-child { padding-left: 0; }
+
+  /* Side panel */
+  .side-panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 50%; min-width: 480px; max-width: 900px;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border);
+    box-shadow: -8px 0 30px rgba(0,0,0,.1);
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column;
+  }
+  .side-panel.open { transform: translateX(0); }
+  .side-panel-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .side-panel-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .side-panel-title { font-size: 15px; font-weight: 700; flex: 1; }
+  .side-panel-close {
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 16px; padding: 6px; border-radius: 6px;
+  }
+  .side-panel-close:hover { background: var(--bg-input); color: var(--text-primary); }
+  .side-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .side-panel-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.2); z-index: 199; display: none;
+  }
+  .side-panel-overlay.open { display: block; }
+  [data-theme="dark"] .side-panel { box-shadow: -8px 0 30px rgba(0,0,0,.4); }
+  [data-theme="dark"] .side-panel-overlay.open { background: rgba(0,0,0,.5); }
+
+  .theme-card-header .theme-expand-hint {
+    font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .theme-card-header:hover .theme-expand-hint { color: var(--accent); }
+
+  /* ── Team Update Section ── */
+  .team-update {
+    padding: 0 0 20px;
+    background: var(--bg-card);
+  }
+
+  .update-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .update-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--text-muted);
+  }
+  .update-date { font-size: 11px; color: var(--text-muted); }
+
+  .update-metrics {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px; margin-bottom: 20px;
+  }
+  .update-metric {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; background: var(--bg-primary);
+  }
+  .update-metric-value {
+    font-size: 20px; font-weight: 700; line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .update-metric-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .update-metric-trend { font-size: 10px; margin-top: 4px; font-weight: 500; }
+  .trend-up { color: #10b981; }
+  .trend-down { color: #ef4444; }
+  .trend-neutral { color: var(--text-muted); }
+
+  .update-columns {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+  }
+  @media (min-width: 1400px) { .side-panel .update-columns { grid-template-columns: 1fr 1fr; } }
+
+  .update-section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .update-section-label i { font-size: 10px; }
+
+  .highlight-item {
+    padding: 10px 14px; border-radius: 8px;
+    border: 1px solid var(--border); margin-bottom: 8px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .highlight-title {
+    font-weight: 600; color: var(--text-primary); margin-bottom: 2px;
+  }
+  .highlight-detail { color: var(--text-secondary); }
+  .highlight-link {
+    color: var(--accent); text-decoration: none; font-weight: 500;
+  }
+  .highlight-link:hover { text-decoration: underline; }
+
+  .shift-item {
+    padding: 8px 12px; border-radius: 8px;
+    border-left: 3px solid #f59e0b;
+    background: var(--bg-primary); margin-bottom: 8px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .shift-item.risk { border-left-color: #ef4444; }
+  .shift-item.positive { border-left-color: #10b981; }
+  .shift-title { font-weight: 600; color: var(--text-primary); }
+  .shift-detail { color: var(--text-secondary); margin-top: 2px; }
+
+  .update-source {
+    margin-top: 16px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-muted);
+  }
+  .update-source a { color: var(--accent); text-decoration: none; }
+  .update-source a:hover { text-decoration: underline; }
+
   .empty-state { padding: 60px; text-align: center; color: var(--text-muted); }
   .loading-spinner {
     display: inline-block; width: 14px; height: 14px;
@@ -326,14 +482,18 @@
     <button class="sidebar-toggle" id="sidebarToggle" title="Collapse"><i class="fas fa-chevron-left"></i></button>
   </div>
   <div class="sidebar-nav">
+    <a href="https://pcb-hub.quick.shopify.io/" class="nav-item">
+      <i class="fas fa-house"></i>
+      <span class="nav-label">PCB Hub</span>
+    </a>
     <a href="timeline.html" class="nav-item parent-active">
       <i class="fas fa-chart-gantt"></i>
-      <span class="nav-label">Roadmap</span>
+      <span class="nav-label">Roadmap Calendar</span>
     </a>
     <div class="nav-sub">
       <a href="index.html" class="nav-sub-item">
         <i class="fas fa-table-cells"></i>
-        <span class="nav-label">Project Details</span>
+        <span class="nav-label">Roadmap</span>
       </a>
       <a href="themes.html" class="nav-sub-item">
         <i class="fas fa-layer-group"></i>
@@ -347,11 +507,11 @@
         <i class="fas fa-calendar-days"></i>
         <span class="nav-label">Release Calendar</span>
       </a>
-      <a href="slip.html" class="nav-sub-item">
-        <i class="fas fa-clock-rotate-left"></i>
-        <span class="nav-label">Slip Insights</span>
-      </a>
     </div>
+    <a href="weekly.html" class="nav-item" style="margin-top:8px">
+      <i class="fas fa-bolt"></i>
+      <span class="nav-label">Weekly Snapshot</span>
+    </a>
   </div>
   <div class="sidebar-spacer"></div>
   <div class="sidebar-bottom">
@@ -369,9 +529,10 @@
 <div class="main-content">
 <header>
   <div class="header-left">
-    <span class="header-title">H1 Performance to Plan</span>
+    <span class="header-title" id="header-title">Performance to Plan</span>
     <span class="header-count" id="header-count"></span>
   </div>
+  <div class="header-right"></div>
 </header>
 
 <div class="content-wrap" id="content">
@@ -380,14 +541,25 @@
 </div>
 
 </div>
+<div class="side-panel-overlay" id="sidePanelOverlay" onclick="closeSidePanel()"></div>
+<div class="side-panel" id="sidePanel">
+  <div class="side-panel-header">
+    <div class="side-panel-icon" id="sidePanelIcon"></div>
+    <span class="side-panel-title" id="sidePanelTitle"></span>
+    <button class="side-panel-close" onclick="closeSidePanel()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="side-panel-body" id="sidePanelBody"></div>
+</div>
 
 <script>
 const TEAM_CONFIG = {
-  'Money Movement and Expansion': { color: '#3b82f6', icon: '💸' },
+  'Money Movement':               { color: '#3b82f6', icon: '💸' },
   'Payments Platform & Risk':     { color: '#ef4444', icon: '🛡️' },
   'Cross Border':                 { color: '#06b6d4', icon: '🌍' },
-  'Payment Merchant Experience':  { color: '#a855f7', icon: '🏪' },
+  'Payments Experience':          { color: '#a855f7', icon: '🏪' },
   'Shop Wallet':                  { color: '#22c55e', icon: '👛' },
+  'Billing':                      { color: '#10b981', icon: '🧾' },
+  'Taxes':                        { color: '#8b5cf6', icon: '🧮' },
 };
 
 const PHASE_COLORS = {
@@ -410,6 +582,260 @@ const PHASE_LABELS = {
 
 let allProjects = [];
 let vaultUrls = {};
+let teamPanelData = {};
+let selectedHalf = 'all';
+
+function setHalfFilter(h) {
+  selectedHalf = h;
+  ['h1', 'h2', 'all'].forEach(t => {
+    const btn = document.getElementById('type-' + t);
+    if (btn) btn.classList.toggle('active', t === h.toLowerCase());
+  });
+  render();
+}
+
+const TEAM_UPDATES = {
+  'Payments Experience': {
+    date: 'May 26, 2026',
+    source: 'https://vault.shopify.io/posts/380393-Payments-Merchant-Experience-Cross-Border-May-Update',
+    sourceLabel: 'PE & XB May Update',
+    metrics: [
+      { value: '6', label: 'Active Vault Projects', trend: null, trendDir: 'neutral' },
+      { value: '4', label: 'Reviews Pending', trend: 'Oldest: 14 days', trendDir: 'down' },
+      { value: '4', label: 'Overdue Projects', trend: 'Need attention', trendDir: 'down' },
+      { value: '5', label: 'Date Shifts (14d)', trend: 'Avg slip: +87 days', trendDir: 'down' },
+    ],
+    highlights: [
+      {
+        title: 'PAP-CLE Sync Removal progressing well',
+        detail: 'Multiple flag cleanups merged, schema changes complete. Moving toward full CLE-as-source-of-truth.',
+        link: 'https://vault.shopify.io/gsd/projects/50269',
+      },
+      {
+        title: 'US Onboarding with Policies & Completeness',
+        detail: 'Finalized flag architecture for US DCO onboarding rollout. Experiment setup underway.',
+        link: 'https://vault.shopify.io/gsd/projects/50379',
+      },
+      {
+        title: 'Ant Provider Account Management advancing',
+        detail: 'Ongoing development of account lifecycle capabilities for Chinese entities via WorldFirst integration.',
+        link: 'https://vault.shopify.io/gsd/projects/50418',
+      },
+    ],
+    shifts: [
+      {
+        title: 'Payment provider flexibility: EA pushed +105 days',
+        detail: 'Tophatting issues forced significant delay. Release review open 10 days, awaiting OK2.',
+        type: 'risk',
+      },
+      {
+        title: 'Adyen KYB/KYC: GA delayed +150 days',
+        detail: 'Additional reviews required. Done review open 12 days, still pending OK2.',
+        type: 'risk',
+      },
+      {
+        title: 'UAE launch shifted +8 days',
+        detail: 'Ongoing friction in Stripe KYC process causing incremental delay.',
+        type: '',
+      },
+      {
+        title: 'Owning Policies & KYB with Adyen: +44 days',
+        detail: 'At risk due to Alloy LSEG integration gap for EU/UK. Onboarding policy for Adyen being submitted.',
+        type: 'risk',
+      },
+    ],
+  },
+  'Cross Border': {
+    date: 'May 26, 2026',
+    source: 'https://vault.shopify.io/posts/380393-Payments-Merchant-Experience-Cross-Border-May-Update',
+    sourceLabel: 'PME & XB May Update',
+    metrics: [
+      { value: '6,524', label: 'Active Merchants', trend: 'All-time high', trendDir: 'up' },
+      { value: '56,335', label: 'Adopted Merchants', trend: '+13% WoW', trendDir: 'up' },
+      { value: '0', label: 'Projects Shipped (14d)', trend: 'No major milestones', trendDir: 'neutral' },
+      { value: '2', label: 'Date Shifts', trend: 'Adoption rate +210d', trendDir: 'down' },
+    ],
+    highlights: [
+      {
+        title: 'UK Early Access launching May 25 with 0% fee incentive',
+        detail: 'Targeting ~300 merchants for UK EA with fee waiver to drive initial adoption. Canadian uptake lagging.',
+        link: 'https://vault.shopify.io/gsd/projects/49473',
+      },
+      {
+        title: 'Active merchants hit all-time record: 6,524',
+        detail: 'Exceeding BFCM 2025 peak. Adopted merchants at 56,335 (+13% WoW), activated at 10,655.',
+        link: null,
+      },
+      {
+        title: 'V1-V2 migration 100% complete',
+        detail: 'All payment volume now on Shopify Payments. Migration of ~14K merchants finished May 12.',
+        link: 'https://vault.shopify.io/gsd/projects/48172',
+      },
+    ],
+    shifts: [
+      {
+        title: 'Improve MM adoption rate: end date +210 days',
+        detail: 'Merchant backfill issues delayed progress significantly. Project now overdue.',
+        type: 'risk',
+      },
+      {
+        title: 'Default-on GA moved to June 5',
+        detail: 'Scaling to 100% delayed. 60% of default-on merchants fulfilling incorrectly -- First MM Order Hold being aligned as fix.',
+        type: 'risk',
+      },
+      {
+        title: 'Sellability Reassessment off track',
+        detail: 'Health check and retro confirmation blocking Done review for Globale custom restriction review.',
+        type: '',
+      },
+    ],
+  },
+  'Money Movement': {
+    date: 'May 26, 2026',
+    source: 'https://vault.shopify.io/posts/380411-April-progress-and-May-plans-for-payments-and-disputes',
+    sourceLabel: 'April Progress & May Plans for Payments and Disputes',
+    metrics: [
+      { value: '25', label: 'US MTL Jurisdictions', trend: '+4 this period (incl. TX)', trendDir: 'up' },
+      { value: '2', label: 'New Prototypes', trend: 'Interchange Plus, SPI AU', trendDir: 'up' },
+      { value: '1', label: 'Release-Ready', trend: 'Payout Recon blocked by deploy', trendDir: 'neutral' },
+      { value: '3', label: 'Date Shifts', trend: 'Largest: +135 days', trendDir: 'down' },
+    ],
+    highlights: [
+      {
+        title: 'Texas MTL approved -- 25 jurisdictions now licensed',
+        detail: 'Four new state approvals (AK, WY, IN, TX). Texas is a "Big 3" win. California deficiency response submitted by May 16 deadline.',
+        link: 'https://vault.shopify.io/gsd/projects/42269',
+      },
+      {
+        title: 'Thistle EU/UK licensing agreement signed May 21',
+        detail: 'Engagement kicks off following week. Luxembourg EMI flows classified as e-money (~EUR 4.2M initial capital under Method D).',
+        link: 'https://vault.shopify.io/gsd/projects/48742',
+      },
+      {
+        title: 'Funds Flow ledger -- Stripe reserve & PayPal fixes merged',
+        detail: 'Reserve-exclusion flag rolled out to 100%. Pod 800 reconciliation still blocked by external Yugabyte staging rebuild.',
+        link: 'https://vault.shopify.io/gsd/projects/49401',
+      },
+    ],
+    shifts: [
+      {
+        title: 'Funds Flow ledger centralization: +135 days',
+        detail: 'End date May 14 -> Jun 19. Realigned with broader Shopify-wide centralized ledger initiative.',
+        type: '',
+      },
+      {
+        title: 'Shop Pay Installments Financing API: health check concern',
+        detail: 'Limited Release +4 days (May 29 -> Jun 1). Webhook rejection handling and deployment sequencing flagged. Affirm rollout risks open.',
+        type: 'risk',
+      },
+      {
+        title: 'CBT for Shop Pay Installments: paused',
+        detail: 'Cross-border SPI for US/UK/CA paused due to coordination blocker. No active progress until dependencies resolved.',
+        type: 'risk',
+      },
+      {
+        title: 'New: Interchange Plus Pricing + SPI Australia',
+        detail: 'Two new P2 prototypes entered the portfolio. SPI AU targeting alpha ~July 2026.',
+        type: 'positive',
+      },
+    ],
+  },
+  'Payments Platform & Risk': {
+    date: 'May 26, 2026',
+    source: 'https://docs.google.com/document/d/1AKrei91to7oJ88l72R1SjFiDjYIfkKDEgsnkn4qPoOs/edit',
+    sourceLabel: 'PP&R May Update',
+    metrics: [
+      { value: '0', label: 'Projects Shipped', trend: 'No GA this period', trendDir: 'neutral' },
+      { value: '10', label: 'Date Shifts', trend: 'Largest team portfolio', trendDir: 'down' },
+      { value: '1', label: 'New Project', trend: 'Card-Present Gateway parity', trendDir: 'up' },
+      { value: '1', label: 'Overdue', trend: 'Fraud Models for Detection', trendDir: 'down' },
+    ],
+    highlights: [
+      {
+        title: 'Adyen Apple Pay fix merged',
+        detail: 'Critical fix shipped despite notable error rate. Refining subscription routing across ambassadors while hedging against 3DS token issues.',
+        link: 'https://vault.shopify.io/gsd/projects/48321',
+      },
+      {
+        title: 'ML transaction routing experiment ramped',
+        detail: 'Promising results from model-driven routing optimization. Assessing PayPal network token performance for routing improvements.',
+        link: 'https://vault.shopify.io/gsd/projects/49388',
+      },
+      {
+        title: 'New: Card-Present Gateway feature parity',
+        detail: 'P2 prototype kicked off with pivotal Adyen foundations and Stripe collaboration. Strategic gateway readiness for in-person commerce.',
+        link: 'https://vault.shopify.io/gsd/projects/50849',
+      },
+    ],
+    shifts: [
+      {
+        title: 'Shop Pay Network Tokenization: extended to Aug 7',
+        detail: 'Third-party integration issues forcing significant slip. Critical for auth rate improvement.',
+        type: 'risk',
+      },
+      {
+        title: 'Global Vault migration: +Jun 12',
+        detail: 'Release postponed after bin number validation incident.',
+        type: 'risk',
+      },
+      {
+        title: 'Sequential NITS classifier: +Jun 12',
+        detail: 'Capacity constraints impeding development. Risking delays in significant fraud payout cuts.',
+        type: 'risk',
+      },
+      {
+        title: 'Enhanced Fraud Models: overdue',
+        detail: 'Experiments show meaningful gains in fraud reduction but urgent health check needed. GA overdue, freshness lacking.',
+        type: 'risk',
+      },
+      {
+        title: 'Automated retraining pipeline: +Jun 19',
+        detail: 'Distributed HPO issues point to risk in exiting prototype phase.',
+        type: '',
+      },
+    ],
+  },
+  'Shop Wallet': {
+    date: 'May 26, 2026',
+    source: 'https://vault.shopify.io/posts/380506-Shop-Wallet-April-2026',
+    sourceLabel: 'Shop Wallet April Update',
+    metrics: [
+      { value: '2', label: 'Active Projects', trend: 'Quiet period', trendDir: 'neutral' },
+      { value: '1', label: 'Pull-In', trend: 'Self-Serve -32 days', trendDir: 'up' },
+      { value: '1', label: 'Push-Out', trend: 'LPMs +29 days', trendDir: 'down' },
+      { value: '0', label: 'New Risks', trend: 'No new blockers', trendDir: 'up' },
+    ],
+    highlights: [
+      {
+        title: 'LPMs in Shop Pay: checkout-grain A/B at 100%',
+        detail: 'Reset from noisy merchant-grain experiment. Early positive signals. Final read expected Wed May 28. CA/B2B unification advancing in parallel.',
+        link: 'https://vault.shopify.io/gsd/projects/48636',
+      },
+      {
+        title: 'Self-Serve Sign Up pulled in 32 days',
+        detail: 'All blockers cleared ahead of schedule. Launch now targeting May 27. Checkout total validation at 100% for new merchants.',
+        link: 'https://vault.shopify.io/gsd/projects/50241',
+      },
+      {
+        title: 'Quiet, healthy execution window',
+        detail: 'No projects shipped, no new risks flagged, no new projects created. Team focused on closing existing work cleanly.',
+        link: null,
+      },
+    ],
+    shifts: [
+      {
+        title: 'LPMs in Shop Pay GA: +29 days',
+        detail: 'Apr 30 -> May 29. Original 50/50 merchant-grain experiment returned noisy data due to merchant mix bias. Reset to checkout-grain for clean results.',
+        type: '',
+      },
+      {
+        title: 'Self-Serve Sign Up: pulled in -32 days',
+        detail: 'Jun 30 -> May 26. All in-flight work completed ahead of schedule. Build review open 17 days, awaiting OK2.',
+        type: 'positive',
+      },
+    ],
+  },
+};
 
 function getVaultUrl(projectName) {
   if (!projectName || !vaultUrls) return null;
@@ -465,6 +891,7 @@ function parseProjects(rows) {
       subTeam: get('sub team') || get('subteam'),
       half: get('h'),
       rank: get('rank'),
+      priority: get('priority') || get('p') || '',
       shipping: get('shipping'),
       status: get('status') || '',
       phase: get('phase'),
@@ -484,19 +911,26 @@ function renderProgressRing(pct, color) {
     </svg>
     <span class="progress-pct">${Math.round(pct)}%</span>
   </div>
-  <div class="progress-label">Observe / Release / Done</div>`;
+  <div class="progress-label">In Progress or Done</div>`;
 }
 
 function buildPhaseBar(phaseCounts, total) {
-  const barSegsHtml = PHASES.filter(ph => phaseCounts[ph] > 0).map(ph => {
-    const w = (phaseCounts[ph] / total) * 100;
-    return `<div class="phase-bar-seg" style="width:${w}%;background:${PHASE_COLORS[ph]}" title="${PHASE_LABELS[ph]}: ${phaseCounts[ph]}"></div>`;
+  const planned = (phaseCounts['planned']||0) + (phaseCounts['off-vault']||0);
+  const displayPhases = [
+    {key:'planned',label:'Planned',count:planned,color:'#94a3b8'},
+    {key:'prototype',label:'Prototype',count:phaseCounts['prototype']||0,color:'#a855f7'},
+    {key:'build',label:'Build',count:phaseCounts['build']||0,color:'#f59e0b'},
+    {key:'observe',label:'Observe',count:phaseCounts['observe']||0,color:'#06b6d4'},
+    {key:'release',label:'Release',count:phaseCounts['release']||0,color:'#3b82f6'},
+    {key:'done',label:'Done',count:phaseCounts['done']||0,color:'#6b7280'},
+  ].filter(p=>p.count>0);
+  const barSegsHtml = displayPhases.map(p => {
+    const w = (p.count / total) * 100;
+    return `<div class="phase-bar-seg" style="width:${w}%;background:${p.color}" title="${p.label}: ${p.count}"></div>`;
   }).join('');
-
-  const legendHtml = PHASES.filter(ph => phaseCounts[ph] > 0).map(ph =>
-    `<div class="phase-legend-item"><div class="phase-legend-dot" style="background:${PHASE_COLORS[ph]}"></div>${PHASE_LABELS[ph]} (${phaseCounts[ph]})</div>`
+  const legendHtml = displayPhases.map(p =>
+    `<div class="phase-legend-item"><div class="phase-legend-dot" style="background:${p.color}"></div>${p.label} (${p.count})</div>`
   ).join('');
-
   return { barSegsHtml, legendHtml };
 }
 
@@ -531,19 +965,67 @@ function dedupeProjects(projects) {
   });
 }
 
+function buildTeamUpdate(team) {
+  const update = TEAM_UPDATES[team];
+  if (!update) return '';
+
+  const metricsHtml = update.metrics.map(m => {
+    const trendClass = m.trendDir === 'up' ? 'trend-up' : m.trendDir === 'down' ? 'trend-down' : 'trend-neutral';
+    const trendIcon = m.trendDir === 'up' ? '&#9650;' : m.trendDir === 'down' ? '&#9660;' : '';
+    return `<div class="update-metric">
+      <div class="update-metric-value">${m.value}</div>
+      <div class="update-metric-label">${m.label}</div>
+      ${m.trend ? `<div class="update-metric-trend ${trendClass}">${trendIcon} ${m.trend}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const highlightsHtml = update.highlights.map(h => {
+    const linkHtml = h.link ? ` <a href="${h.link}" target="_blank" class="highlight-link">View project &rarr;</a>` : '';
+    return `<div class="highlight-item">
+      <div class="highlight-title">${h.title}</div>
+      <div class="highlight-detail">${h.detail}${linkHtml}</div>
+    </div>`;
+  }).join('');
+
+  const shiftsHtml = update.shifts.map(s => {
+    const typeClass = s.type === 'risk' ? ' risk' : s.type === 'positive' ? ' positive' : '';
+    return `<div class="shift-item${typeClass}">
+      <div class="shift-title">${s.title}</div>
+      <div class="shift-detail">${s.detail}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="team-update">
+    <div class="update-columns">
+      <div>
+        <div class="update-section-label"><i class="fas fa-trophy"></i> Top Highlights</div>
+        ${highlightsHtml}
+      </div>
+      <div>
+        <div class="update-section-label"><i class="fas fa-arrows-rotate"></i> Prioritization Shifts</div>
+        ${shiftsHtml}
+      </div>
+    </div>
+    <div class="update-source">Source: <a href="${update.source}" target="_blank">${update.sourceLabel}</a> &middot; As of ${update.date}</div>
+  </div>`;
+}
+
 function render() {
   const content = document.getElementById('content');
-  const h1Projects = dedupeProjects(allProjects.filter(p => p.half === 'H1' && p.rank && p.rank.toUpperCase() !== 'N/A'));
+  const selectedProjects = dedupeProjects(allProjects.filter(p => (selectedHalf === 'all' || p.half === selectedHalf) && (p.rank || '').toUpperCase() !== 'N/A'));
+  const halfLabel = selectedHalf === 'all' ? '' : selectedHalf + ' ';
 
-  document.getElementById('header-count').textContent = `${h1Projects.length} H1 projects`;
+  const titleEl = document.getElementById('header-title');
+  if (titleEl) titleEl.textContent = `${halfLabel}Performance to Plan`;
+  document.getElementById('header-count').textContent = `${selectedProjects.length} projects`;
 
-  if (!h1Projects.length) {
-    content.innerHTML = '<div class="empty-state">No H1 projects found.</div>';
+  if (!selectedProjects.length) {
+    content.innerHTML = `<div class="empty-state">No projects found.</div>`;
     return;
   }
 
   const grouped = {};
-  h1Projects.forEach(p => {
+  selectedProjects.forEach(p => {
     const team = p.team || 'Other';
     if (!grouped[team]) grouped[team] = [];
     grouped[team].push(p);
@@ -551,14 +1033,14 @@ function render() {
 
   const overallPhaseCounts = {};
   PHASES.forEach(ph => overallPhaseCounts[ph] = 0);
-  h1Projects.forEach(p => {
+  selectedProjects.forEach(p => {
     const ph = getPhase(p);
     if (overallPhaseCounts[ph] !== undefined) overallPhaseCounts[ph]++;
     else overallPhaseCounts['build']++;
   });
-  const overallAdvanced = overallPhaseCounts['observe'] + overallPhaseCounts['release'] + overallPhaseCounts['done'];
-  const overallPct = (overallAdvanced / h1Projects.length) * 100;
-  const overallBar = buildPhaseBar(overallPhaseCounts, h1Projects.length);
+  const overallAdvanced = (overallPhaseCounts['prototype']||0) + (overallPhaseCounts['build']||0) + (overallPhaseCounts['observe']||0) + (overallPhaseCounts['release']||0) + (overallPhaseCounts['done']||0);
+  const overallPct = selectedProjects.length > 0 ? (overallAdvanced / selectedProjects.length) * 100 : 0;
+  const overallBar = buildPhaseBar(overallPhaseCounts, selectedProjects.length);
 
   let html = `<div class="overall-summary" style="flex-direction:column;gap:16px;">
     <div style="display:flex;align-items:center;gap:20px;">
@@ -567,7 +1049,7 @@ function render() {
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Payments & Cross Border</div>
-        <div style="font-size:12px;color:var(--text-muted);">H1 Performance to Plan · ${h1Projects.length} projects</div>
+        <div style="font-size:12px;color:var(--text-muted);">${halfLabel}Performance to Plan · ${selectedProjects.length} projects</div>
       </div>
     </div>
     <div class="overall-bar-wrap">
@@ -580,11 +1062,13 @@ function render() {
   </div>`;
 
   const teamOrder = [
-    'Money Movement and Expansion',
+    'Money Movement',
     'Payments Platform & Risk',
     'Cross Border',
-    'Payment Merchant Experience',
+    'Payments Experience',
     'Shop Wallet',
+    'Billing',
+    'Taxes',
   ];
 
   const teams = teamOrder.filter(t => grouped[t]);
@@ -604,7 +1088,7 @@ function render() {
       else phaseCounts['build']++;
     });
 
-    const advancedCount = phaseCounts['observe'] + phaseCounts['release'] + phaseCounts['done'];
+    const advancedCount = (phaseCounts['prototype']||0) + (phaseCounts['build']||0) + (phaseCounts['observe']||0) + (phaseCounts['release']||0) + (phaseCounts['done']||0);
     const progressPct = projects.length > 0 ? (advancedCount / projects.length) * 100 : 0;
 
     const phaseCountsHtml = PHASES.map(ph => `
@@ -616,9 +1100,12 @@ function render() {
 
     const { barSegsHtml, legendHtml } = buildPhaseBar(phaseCounts, projects.length);
 
+    const prioRank = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3, 'P4': 4 };
     const sortedProjects = [...projects].sort((a, b) => {
-      const order = { 'build': 0, 'observe': 1, 'release': 2, 'prototype': 3, 'done': 4, 'planned': 5, 'stopped': 6, 'off-vault': 7 };
-      return (order[getPhase(a)] ?? 9) - (order[getPhase(b)] ?? 9);
+      const pA = prioRank[(a.priority || '').toUpperCase()] ?? 9;
+      const pB = prioRank[(b.priority || '').toUpperCase()] ?? 9;
+      if (pA !== pB) return pA - pB;
+      return (parseInt(a.rank) || 999) - (parseInt(b.rank) || 999);
     });
 
     const rowsHtml = sortedProjects.map(p => {
@@ -629,16 +1116,34 @@ function render() {
       const nameCell = vaultUrl
         ? `<a href="${vaultUrl}" target="_blank">${p.name}</a>`
         : `<span class="off-vault-name">${p.name}</span>`;
+      const prio = (p.priority || '').toUpperCase();
+      const prioClass = ['P0','P1','P2','P3','P4'].includes(prio) ? prio.toLowerCase() : 'none';
+      const prioCell = prio ? `<span class="priority-pill ${prioClass}">${prio}</span>` : '<span class="priority-pill none">—</span>';
       return `<tr>
         <td class="proj-name-cell">${nameCell}</td>
+        <td style="text-align:center">${prioCell}</td>
         <td>${p.subTeam || '—'}</td>
         <td><span class="phase-pill" style="background:${phBg};color:${phColor}">${PHASE_LABELS[phase]}</span></td>
         <td>${p.shipping || '—'}</td>
       </tr>`;
     }).join('');
 
-    html += `<div class="theme-card" data-team-idx="${tIdx}">
-      <div class="theme-card-header" onclick="toggleTeam(${tIdx})">
+    teamPanelData[team] = {
+      icon: config.icon,
+      color: config.color,
+      projects: projects.length,
+      updateHtml: buildTeamUpdate(team),
+      tableHtml: `<div class="projects-section" style="margin-top:0">
+        <div class="projects-label">Team Projects (${projects.length})</div>
+        <table class="projects-table">
+          <thead><tr><th>Project</th><th style="text-align:center">Priority</th><th>Sub Team</th><th>Phase</th><th>Est. End</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>`,
+    };
+
+    html += `<div class="theme-card" data-team-idx="${tIdx}" onclick="openTeamPanel('${team.replace(/'/g, "\\'")}')" style="cursor:pointer">
+      <div class="theme-card-header">
         <div class="theme-accent" style="background:${config.color}"></div>
         <div class="theme-icon" style="background:${config.color}18;color:${config.color}">${config.icon}</div>
         <div class="theme-info">
@@ -650,7 +1155,7 @@ function render() {
         <div class="theme-progress">
           ${renderProgressRing(progressPct, config.color)}
         </div>
-        <i class="fas fa-chevron-down theme-chevron"></i>
+        <div class="theme-expand-hint"><i class="fas fa-chevron-right"></i> View details</div>
       </div>
       <div class="theme-summary">
         <div class="phase-counts">${phaseCountsHtml}</div>
@@ -660,25 +1165,33 @@ function render() {
           <div class="phase-bar-legend">${legendHtml}</div>
         </div>
       </div>
-      <div class="theme-body">
-        <div class="projects-section" style="margin-top:0">
-          <div class="projects-label">Team Projects (${projects.length})</div>
-          <table class="projects-table">
-            <thead><tr><th>Project</th><th>Sub Team</th><th>Phase</th><th>Est. End</th></tr></thead>
-            <tbody>${rowsHtml}</tbody>
-          </table>
-        </div>
-      </div>
     </div>`;
   });
 
   content.innerHTML = html;
 }
 
-function toggleTeam(idx) {
-  const card = document.querySelector(`.theme-card[data-team-idx="${idx}"]`);
-  if (card) card.classList.toggle('expanded');
+function openTeamPanel(team) {
+  const data = teamPanelData[team];
+  if (!data) return;
+  document.getElementById('sidePanelTitle').textContent = team;
+  const iconEl = document.getElementById('sidePanelIcon');
+  iconEl.textContent = data.icon;
+  iconEl.style.background = data.color + '18';
+  iconEl.style.color = data.color;
+  document.getElementById('sidePanelBody').innerHTML = `${data.updateHtml}${data.tableHtml}`;
+  document.getElementById('sidePanel').classList.add('open');
+  document.getElementById('sidePanelOverlay').classList.add('open');
 }
+
+function closeSidePanel() {
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('sidePanelOverlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeSidePanel();
+});
 
 async function loadData() {
   const content = document.getElementById('content');

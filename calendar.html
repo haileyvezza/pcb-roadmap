@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<script>(function(){var s=localStorage.getItem('pcb-theme'),d=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s||d);})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<title>Release Calendar — PCB Roadmap</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #f6f6f7; --bg-card: #ffffff; --bg-input: #f3f3f6;
+    --bg-sidebar: #ffffff; --border: rgba(0,0,0,0.08); --border-hover: rgba(0,0,0,0.14);
+    --text-primary: #1a1a1f; --text-secondary: #6b6b76; --text-muted: #9a9aa4;
+    --accent-green: #0088FF; --accent-green-dim: rgba(0,136,255,0.08);
+    --radius: 12px; --shadow-card: 0 1px 3px rgba(0,0,0,0.06);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --sidebar-width: 200px; --sidebar-collapsed: 56px;
+  }
+  [data-theme="dark"] {
+    --bg-primary: #101114; --bg-card: #202227; --bg-input: #292C32;
+    --bg-sidebar: #1a1a1f; --border: rgba(252,252,253,0.08); --border-hover: rgba(252,252,253,0.15);
+    --text-primary: #FCFCFD; --text-secondary: #9DA1AE; --text-muted: #676D7E;
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-sans); font-size: 13px; height: 100vh; display: flex; overflow: hidden; }
+  .app-layout { display: flex; width: 100%; height: 100vh; overflow: hidden; }
+  .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.2s ease; overflow: hidden; border-right: 1px solid var(--border); }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+  .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 12px 12px; border-bottom: 1px solid var(--border); }
+  .sidebar-brand { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+  .sidebar-logo { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
+  .sidebar-title { font-size: 13px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; transition: opacity 0.2s; white-space: nowrap; }
+  .sidebar.collapsed .sidebar-title { opacity: 0; width: 0; }
+  .sidebar-toggle { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 11px; padding: 4px; border-radius: 4px; flex-shrink: 0; transition: background .15s, color .15s; }
+  .sidebar-toggle:hover { background: var(--bg-input); color: var(--text-primary); }
+  .sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 0; }
+  .sidebar.collapsed .sidebar-brand { display: none; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; }
+  .sidebar-spacer { flex: 1; }
+  .sidebar-bottom { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; border-top: 1px solid var(--border); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--text-secondary); font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer; transition: background .15s, color .15s; position: relative; overflow: hidden; white-space: nowrap; }
+  .nav-item::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 0; background: var(--accent-green); border-radius: 0 2px 2px 0; transition: height 0.2s; }
+  .nav-item:hover { background: var(--bg-input); color: var(--text-primary); }
+  .nav-item:hover::before { height: 14px; }
+  .nav-item.active { background: rgba(0,136,255,0.08); color: var(--accent-green); font-weight: 600; }
+  .nav-item.active::before { height: 20px; }
+  .nav-item i { width: 16px; text-align: center; flex-shrink: 0; font-size: 13px; }
+  .nav-label { transition: opacity 0.2s, width 0.2s; overflow: hidden; }
+  .sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+  .sidebar.collapsed .nav-item { justify-content: center; padding: 9px; gap: 0; }
+  .sidebar.collapsed .sidebar-nav, .sidebar.collapsed .sidebar-bottom { padding-left: 0; padding-right: 0; align-items: center; }
+  .nav-sub { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; }
+  .nav-sub-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px 7px 32px; border-radius: 8px; cursor: pointer; color: var(--text-muted); font-size: 12px; font-weight: 500; text-decoration: none; transition: all 0.15s; white-space: nowrap; overflow: hidden; }
+  .nav-sub-item:hover { background: var(--bg-input); color: var(--text-primary); }
+  .nav-sub-item.active { color: var(--accent-green); font-weight: 600; }
+  .nav-item.parent-active { color: var(--text-primary); }
+  .sidebar.collapsed .nav-sub { display: none; }
+  .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+  header { background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; gap: 16px; height: 56px; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  #table-wrap { flex: 1; overflow: auto; padding: 20px; }
+  table { border-collapse: collapse; width: 100%; background: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-card); }
+  thead th { background: var(--bg-input); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg-input); }
+  tbody tr.past-row td { opacity: 0.5; }
+  tbody tr.editions-row td { background: rgba(139,92,246,0.06); border-top: 2px solid rgba(139,92,246,0.3); border-bottom: 2px solid rgba(139,92,246,0.3); }
+  tbody tr.upcoming-row td { background: rgba(0,136,255,0.04); }
+  tbody tr.upcoming-row td:first-child { border-left: 3px solid var(--accent-green); }
+  td { padding: 9px 14px; vertical-align: middle; white-space: nowrap; }
+  .version-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(0,136,255,0.1); color: var(--accent-green); }
+  .version-badge.past { background: var(--bg-input); color: var(--text-muted); }
+  .version-badge.editions { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+  .fyi-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: rgba(22,163,74,0.08); color: #16a34a; border: 1px solid rgba(22,163,74,0.2); white-space: nowrap; max-width: 340px; overflow: hidden; text-overflow: ellipsis; }
+  .fyi-badge.editions { background: rgba(139,92,246,0.08); color: #8b5cf6; border-color: rgba(139,92,246,0.2); }
+  .muted-cell { color: var(--text-muted); }
+  .date-cell { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <span class="sidebar-logo">💳</span>
+      <span class="sidebar-title">PCB Roadmap</span>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Collapse"><i class="fas fa-chevron-left"></i></button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="https://pcb-hub.quick.shopify.io/" class="nav-item">
+      <i class="fas fa-house"></i>
+      <span class="nav-label">PCB Hub</span>
+    </a>
+    <a href="timeline.html" class="nav-item parent-active">
+      <i class="fas fa-chart-gantt"></i>
+      <span class="nav-label">Roadmap Calendar</span>
+    </a>
+    <div class="nav-sub">
+      <a href="index.html" class="nav-sub-item">
+        <i class="fas fa-table-cells"></i>
+        <span class="nav-label">Roadmap</span>
+      </a>
+      <a href="themes.html" class="nav-sub-item">
+        <i class="fas fa-layer-group"></i>
+        <span class="nav-label">By Theme</span>
+      </a>
+      <a href="performance.html" class="nav-sub-item">
+        <i class="fas fa-chart-line"></i>
+        <span class="nav-label">Performance to Plan</span>
+      </a>
+      <a href="calendar.html" class="nav-sub-item active">
+        <i class="fas fa-calendar-days"></i>
+        <span class="nav-label">Release Calendar</span>
+      </a>
+      <a href="weekly.html" class="nav-sub-item">
+        <i class="fas fa-bolt"></i>
+        <span class="nav-label">Weekly Snapshot</span>
+      </a>
+    </div>
+  </div>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-bottom">
+    <a href="https://docs.google.com/spreadsheets/d/17xd1aWdtf33kUk3giF5WyC4dJpbClOjPGh2cVMYiuvI" target="_blank" class="nav-item">
+      <i class="fas fa-external-link-alt"></i>
+      <span class="nav-label">Source Sheet</span>
+    </a>
+    <div class="nav-item" id="darkModeToggle">
+      <i class="fas fa-moon"></i>
+      <span class="nav-label">Dark Mode</span>
+    </div>
+  </div>
+</nav>
+<div class="main-content">
+<header>
+  <div class="header-left">
+    <span style="font-weight: 600; font-size: 15px;">PCB Release Calendar</span>
+  </div>
+  <div class="header-right">
+  </div>
+</header>
+<div id="table-wrap">
+  <div style="color:var(--text-muted);padding:20px">Loading…</div>
+</div>
+</div>
+</div>
+
+<script>
+let calReleases = [];
+let phaseColors = {};
+let slipData = {};
+let vaultUrls = {};
+let filters = { team: '', editions: '', phase: '' };
+const TODAY_STR = new Date().toISOString().split('T')[0];
+
+function getVaultUrl(name) {
+  if (!name || !vaultUrls) return null;
+  if (vaultUrls[name]) return vaultUrls[name];
+  const lower = name.toLowerCase();
+  for (const [key, url] of Object.entries(vaultUrls)) {
+    if (key.toLowerCase() === lower) return url;
+  }
+  for (const [key, url] of Object.entries(vaultUrls)) {
+    if (lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) return url;
+  }
+  return null;
+}
+
+function parseSlipCSV(text) {
+  const lines = text.split('\n');
+  if (lines.length < 2) return {};
+  const result = {};
+  for (let i = 1; i < lines.length; i++) {
+    const cols = [];
+    let current = '', inQuotes = false;
+    for (const ch of lines[i]) {
+      if (ch === '"') { inQuotes = !inQuotes; continue; }
+      if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; continue; }
+      current += ch;
+    }
+    cols.push(current.trim());
+    if (cols.length < 7) continue;
+    const project = cols[1], milestone = cols[3], days = parseInt(cols[6], 10);
+    if (!project || isNaN(days)) continue;
+    const key = project.toLowerCase();
+    if (milestone === 'End Date') {
+      if (!result[key] || Math.abs(days) > Math.abs(result[key])) result[key] = days;
+    }
+  }
+  return result;
+}
+
+function getSlipForProject(name) {
+  if (!name) return null;
+  const key = name.toLowerCase();
+  if (slipData[key] !== undefined) return slipData[key];
+  for (const [k, v] of Object.entries(slipData)) {
+    if (key.includes(k) || k.includes(key)) return v;
+  }
+  return null;
+}
+
+function formatDate(s) {
+  if (!s) return '—';
+  const d = new Date(s + 'T00:00:00');
+  return isNaN(d) ? s : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function isPast(d) { return !!d && d < TODAY_STR; }
+function isNearFuture(d) {
+  if (!d) return false;
+  const dt = new Date(d + 'T00:00:00');
+  const diffDays = (dt - new Date()) / (1000 * 60 * 60 * 24);
+  return diffDays >= 0 && diffDays <= 14;
+}
+
+function getPhaseColor(phase) {
+  const colors = {
+    'Prototype': '#f59e0b',
+    'Build': '#3b82f6',
+    'Release': '#8b5cf6',
+    'GA': '#16a34a',
+    'Done': '#6b7280'
+  };
+  return colors[phase] || '#666';
+}
+
+function getFiltered() {
+  const CUTOFF = '2026-06-01';
+  let releases = calReleases
+    .filter(r => (r.projects && r.projects.length > 0) || r.type === 'editions')
+    .filter(r => !r.date || r.date >= CUTOFF);
+  
+  if (filters.team || filters.editions || filters.phase) {
+    releases = releases.map(r => {
+      if (r.type === 'editions') return r;
+      let projects = r.projects || [];
+      if (filters.team) projects = projects.filter(p => p.team === filters.team);
+      if (filters.editions) {
+        if (filters.editions === 'S26' || filters.editions === 'W27') {
+          projects = projects.filter(p => (p.editions || '').includes(filters.editions));
+        } else if (filters.editions === 'No') {
+          projects = projects.filter(p => !p.editions || p.editions === 'No');
+        }
+      }
+      if (filters.phase) projects = projects.filter(p => p.phase === filters.phase);
+      return { ...r, projects };
+    }).filter(r => r.projects.length > 0 || r.type === 'editions');
+  }
+  
+  return releases;
+}
+
+function render() {
+  const filtered = getFiltered();
+  
+  const rows = filtered.map(r => {
+    const past = isPast(r.date);
+    const nearFuture = isNearFuture(r.date);
+    const isEditionsMilestone = r.type === 'editions';
+    
+    let rowClass = '';
+    if (isEditionsMilestone) rowClass = 'editions-row';
+    else if (past) rowClass = 'past-row';
+    else if (nearFuture) rowClass = 'upcoming-row';
+    
+    if (isEditionsMilestone) {
+      return `<tr class="${rowClass}">
+        <td colspan="5" style="text-align:center;padding:16px;">
+          <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#8b5cf6;">
+            <i class="fas fa-rocket"></i> ${r.milestone}
+          </span>
+        </td>
+      </tr>`;
+    }
+    
+    const projectsHtml = r.projects.map(p => {
+      const phaseColor = getPhaseColor(p.phase);
+      const phaseBadge = `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;background:${phaseColor}18;color:${phaseColor};border:1px solid ${phaseColor}30;">${p.phase || 'Build'}</span>`;
+      const editionsBadge = p.editions && p.editions !== 'No' 
+        ? `<span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;background:rgba(139,92,246,0.12);color:#8b5cf6;margin-left:6px;">${p.editions}</span>` 
+        : '';
+      
+      let projectLink;
+      const vaultLink = p.vault_id
+        ? `https://vault.shopify.io/gsd/projects/${p.vault_id}`
+        : getVaultUrl(p.name);
+      if (vaultLink) {
+        projectLink = `<a href="${vaultLink}" target="_blank" style="font-weight:500;color:var(--text-primary);text-decoration:none;border-bottom:1px solid transparent;transition:border-color 0.15s;" onmouseover="this.style.borderBottomColor='var(--accent-green)'" onmouseout="this.style.borderBottomColor='transparent'">${p.name} <i class="fas fa-external-link-alt" style="font-size:9px;color:var(--text-muted);margin-left:2px;"></i></a>`;
+      } else {
+        projectLink = `<span style="font-weight:500;color:var(--text-secondary);">${p.name}</span>`;
+      }
+      
+      const slip = getSlipForProject(p.name);
+      const slipHtml = slip !== null && slip > 0
+        ? `<span style="font-size:10px;font-weight:600;color:#dc2626;background:#fee2e2;padding:1px 6px;border-radius:4px;white-space:nowrap;">+${slip}d</span>`
+        : '';
+
+      return `<div style="margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        ${phaseBadge}
+        ${projectLink}${editionsBadge}
+        ${slipHtml}
+        <span style="color:var(--text-muted);font-size:11px;margin-left:auto;">${p.team}</span>
+      </div>`;
+    }).join('');
+    
+    return `<tr class="${rowClass}">
+      <td class="date-cell" style="vertical-align:top;white-space:nowrap;width:160px;">${formatDate(r.date)}</td>
+      <td style="vertical-align:top;">${projectsHtml}</td>
+      <td style="vertical-align:top;text-align:center;color:var(--text-muted);width:50px;">${r.projects.length}</td>
+    </tr>`;
+  }).join('');
+  
+  // Count totals
+  const totalProjects = filtered.reduce((sum, r) => sum + (r.projects ? r.projects.length : 0), 0);
+  
+  // Phase legend
+  const phaseLegend = `
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);margin-bottom:16px;">
+      <span style="font-weight:600;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Phase:</span>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#f59e0b;"></span><span style="font-size:12px;">Prototype</span></span>
+        <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#3b82f6;"></span><span style="font-size:12px;">Build</span></span>
+        <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#8b5cf6;"></span><span style="font-size:12px;">Release</span></span>
+        <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;"></span><span style="font-size:12px;">GA</span></span>
+        <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#6b7280;"></span><span style="font-size:12px;">Done</span></span>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('table-wrap').innerHTML = `
+    ${phaseLegend}
+    <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <select id="filter-team" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:12px;">
+        <option value="">All Teams</option>
+      </select>
+      <select id="filter-editions" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:12px;">
+        <option value="">All Editions</option>
+        <option value="S26">S26 Only</option>
+        <option value="W27">W27 Only</option>
+        <option value="No">Not in Editions</option>
+      </select>
+      <select id="filter-phase" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:12px;">
+        <option value="">All Phases</option>
+        <option value="Prototype">Prototype</option>
+        <option value="Build">Build</option>
+        <option value="Release">Release</option>
+        <option value="GA">GA</option>
+        <option value="Done">Done</option>
+      </select>
+      <span style="color:var(--text-muted);font-size:12px;margin-left:auto;">${totalProjects} releases across ${filtered.length} dates</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:160px;">Date</th>
+        <th>Projects</th>
+        <th style="width:50px;text-align:center;">#</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  
+  // Populate team filter
+  const teams = [...new Set(calReleases.flatMap(r => (r.projects || []).map(p => p.team)).filter(Boolean))].sort();
+  const teamSelect = document.getElementById('filter-team');
+  teams.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    if (filters.team === t) opt.selected = true;
+    teamSelect.appendChild(opt);
+  });
+  
+  // Set filter values
+  document.getElementById('filter-editions').value = filters.editions;
+  document.getElementById('filter-phase').value = filters.phase;
+  
+  // Add filter listeners
+  document.getElementById('filter-team').addEventListener('change', e => { filters.team = e.target.value; render(); });
+  document.getElementById('filter-editions').addEventListener('change', e => { filters.editions = e.target.value; render(); });
+  document.getElementById('filter-phase').addEventListener('change', e => { filters.phase = e.target.value; render(); });
+}
+
+// Sidebar toggle
+(function(){
+  const sb = document.getElementById('sidebar'), tg = document.getElementById('sidebarToggle');
+  if (localStorage.getItem('pcb-sidebar-collapsed') === '1') sb.classList.add('collapsed');
+  tg.addEventListener('click', () => {
+    const c = sb.classList.toggle('collapsed');
+    localStorage.setItem('pcb-sidebar-collapsed', c ? '1' : '0');
+  });
+})();
+
+// Dark mode toggle
+document.getElementById('darkModeToggle').addEventListener('click', () => {
+  const h = document.documentElement;
+  const n = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  h.setAttribute('data-theme', n);
+  localStorage.setItem('pcb-theme', n);
+  const icon = document.querySelector('#darkModeToggle i');
+  if (icon) icon.className = n === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+});
+
+// Update dark mode icon on load
+(function() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const icon = document.querySelector('#darkModeToggle i');
+  if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+})();
+
+// Load data
+(async function boot() {
+  try {
+    const [calData, slipText, projData] = await Promise.all([
+      fetch('data/calendar.json').then(r => r.json()),
+      fetch('data/slip.csv').then(r => r.text()).catch(() => ''),
+      fetch('data/projects.json').then(r => r.json()).catch(() => ({}))
+    ]);
+    calReleases = calData.releases || [];
+    phaseColors = calData.phases || {};
+    slipData = parseSlipCSV(slipText);
+    vaultUrls = projData.vaultUrls || {};
+    render();
+  } catch(err) {
+    document.getElementById('table-wrap').innerHTML = `<div style="color:#dc2626;padding:20px">Failed to load: ${err.message}</div>`;
+  }
+})();
+</script>
+</body>
+</html>
