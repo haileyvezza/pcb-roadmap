@@ -204,8 +204,48 @@
   tr:hover td { background: var(--bg-input); }
 
   .muted-cell { color: var(--text-muted); }
-  .col-name { min-width: 220px; max-width: 320px; }
-  .proj-name-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
+  .cell-with-flag { display: inline-flex; align-items: center; gap: 5px; }
+  .change-flag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    font-size: 10px;
+    line-height: 1;
+    cursor: help;
+    flex-shrink: 0;
+    padding: 2px;
+  }
+  [data-theme="dark"] .change-flag { color: #f87171; }
+  #change-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background: #1a1a1f;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    line-height: 1.35;
+    padding: 7px 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity .12s ease, transform .12s ease;
+    max-width: 280px;
+    white-space: normal;
+  }
+  #change-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  [data-theme="dark"] #change-tooltip {
+    background: #f6f6f7;
+    color: #1a1a1f;
+  }
+  .col-name { min-width: 280px; max-width: none; white-space: normal; }
+  .proj-name-cell { overflow: visible; text-overflow: unset; white-space: normal; max-width: none; line-height: 1.35; }
   a.proj-link { color: var(--text-primary); text-decoration: none; }
   a.proj-link:hover { color: var(--accent-green); text-decoration: underline; }
   .vault-icon { font-size: 9px; margin-left: 4px; opacity: 0.5; }
@@ -552,6 +592,10 @@
   <label id="show-done-label" title="Done projects are hidden by default — tick this to include them" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;margin-left:4px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);">
     <input type="checkbox" id="show-done-toggle" style="cursor:pointer;margin:0;"> Show Done
   </label>
+  <label id="flagged-only-label" title="Show only projects with Priority, Target GA, or End Date changes since Jul 2" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);">
+    <input type="checkbox" id="flagged-only-toggle" style="cursor:pointer;margin:0;">
+    <i class="fas fa-flag" style="color:#dc2626;font-size:10px;" aria-hidden="true"></i> Flagged only
+  </label>
   <button id="clear-btn">Clear</button>
   <span id="row-count"></span>
 </div>
@@ -586,6 +630,7 @@ const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, P4: 4 };
 
 let allProjects = [];
 let vaultUrls = {};
+let changeMap = {}; // key: "Team||Project" → { priority?, targetGa?, endDate? }
 let filters = { 
   search: '', 
   half: [],
@@ -601,6 +646,7 @@ let filters = {
 };
 let sortCol = 'startDate', sortDir = 1;
 let showDone = false;
+let flaggedOnly = false;
 
 // Helper used both for the Work Starts cell and for sorting:
 // prefer Vault's actual Starts when a Vault project is linked,
@@ -610,6 +656,80 @@ function getWorkStarts(p) {
   return hasVault
     ? (p.startDate || p.shipMonth || '')
     : (p.shipMonth || p.startDate || '');
+}
+
+function getEndDate(p) {
+  return (p.shipping || p.shipMonth || '').trim();
+}
+
+function changeKey(p) {
+  return `${(p.team || '').trim()}||${(p.name || '').trim()}`;
+}
+
+function hasChangeFlag(p) {
+  return !!changeMap[changeKey(p)];
+}
+
+function changeFlagHtml(p, field, label) {
+  const entry = changeMap[changeKey(p)];
+  if (!entry || !entry[field]) return '';
+  const { from, to } = entry[field];
+  const tip = `${label}: ${from} → ${to}`;
+  const escaped = tip
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return `<span class="change-flag" tabindex="0" role="img" data-tip="${escaped}" aria-label="${escaped}"><i class="fas fa-flag" aria-hidden="true"></i></span>`;
+}
+
+function flaggedCell(innerHtml, p, field, label) {
+  const flag = changeFlagHtml(p, field, label);
+  if (!flag) return innerHtml;
+  return `<span class="cell-with-flag">${innerHtml}${flag}</span>`;
+}
+
+function ensureChangeTooltip() {
+  let tip = document.getElementById('change-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'change-tooltip';
+    document.body.appendChild(tip);
+  }
+  return tip;
+}
+
+function bindChangeFlagTooltips(root) {
+  const tip = ensureChangeTooltip();
+  const show = (el) => {
+    const text = el.getAttribute('data-tip') || el.getAttribute('aria-label') || '';
+    if (!text) return;
+    tip.textContent = text;
+    const rect = el.getBoundingClientRect();
+    const tipWidth = Math.min(280, window.innerWidth - 16);
+    let left = rect.left;
+    if (left + tipWidth > window.innerWidth - 8) left = window.innerWidth - tipWidth - 8;
+    if (left < 8) left = 8;
+    let top = rect.bottom + 8;
+    tip.style.width = 'auto';
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+    tip.classList.add('visible');
+    // If tooltip would go off bottom, flip above
+    requestAnimationFrame(() => {
+      const tipRect = tip.getBoundingClientRect();
+      if (tipRect.bottom > window.innerHeight - 8) {
+        tip.style.top = `${Math.max(8, rect.top - tipRect.height - 8)}px`;
+      }
+    });
+  };
+  const hide = () => tip.classList.remove('visible');
+  root.querySelectorAll('.change-flag').forEach(el => {
+    el.addEventListener('mouseenter', () => show(el));
+    el.addEventListener('mouseleave', hide);
+    el.addEventListener('focus', () => show(el));
+    el.addEventListener('blur', hide);
+  });
 }
 
 // Best-effort parse of human date strings (e.g. "Jul 1, 2026", "12/1/2026")
@@ -790,6 +910,11 @@ function getFiltered() {
     ps = ps.filter(p => !isDoneProject(p));
   }
 
+  // Flagged-only: keep projects with Priority / Target GA / End Date changes since Jul 2
+  if (flaggedOnly) {
+    ps = ps.filter(hasChangeFlag);
+  }
+
   // Stopped work is surfaced in its own section below the table — never in the main list.
   ps = ps.filter(p => !isStoppedProject(p));
 
@@ -811,6 +936,11 @@ function getFiltered() {
     if (sortCol === 'shipping') {
       const da = parseSortableDate(a.shipping);
       const db = parseSortableDate(b.shipping);
+      return (da - db) * sortDir;
+    }
+    if (sortCol === 'endDate') {
+      const da = parseSortableDate(getEndDate(a));
+      const db = parseSortableDate(getEndDate(b));
       return (da - db) * sortDir;
     }
     if (sortCol === 'name') { va = a.name; vb = b.name; }
@@ -985,6 +1115,7 @@ function render() {
   const hints = [];
   if (!showDone && doneCount > 0) hints.push(`${doneCount} Done hidden`);
   if (stoppedCount > 0) hints.push(`${stoppedCount} Stopped in section below`);
+  if (flaggedOnly) hints.push(`${Object.keys(changeMap).length} flagged since Jul 2`);
   const hint = hints.length ? ` <span style="color:var(--text-muted);font-style:italic;">· ${hints.join(' · ')}</span>` : '';
   rcEl.innerHTML = `${ps.length} of ${allProjects.length}${hint}`;
 
@@ -1002,6 +1133,7 @@ function render() {
     { key: 'team', label: 'Team', sort: true },
     { key: 'startDate', label: 'Work Starts', sort: true },
     { key: 'shipping', label: 'Target GA', sort: true },
+    { key: 'endDate', label: 'End Date', sort: true },
     { key: 'editions', label: 'Editions', sort: false },
     { key: 'subTeam', label: 'Sub Team', sort: true },
     { key: 'champion', label: 'Champion', sort: true },
@@ -1033,8 +1165,14 @@ function render() {
     
     // Work Starts: if there's no Vault project linked, fall back to Ship Month
     const workStarts = getWorkStarts(p);
+    const endDate = getEndDate(p);
+    const priorityInner = p.priority
+      ? `<span class="priority-badge ${prioClass}">${p.priority}</span>`
+      : '<span class="muted-cell">—</span>';
+    const targetGaInner = `<span class="muted-cell">${p.shipping || '—'}</span>`;
+    const endDateInner = `<span class="muted-cell">${endDate || '—'}</span>`;
     return `<tr>
-      <td>${p.priority ? `<span class="priority-badge ${prioClass}">${p.priority}</span>` : '<span class="muted-cell">—</span>'}</td>
+      <td>${flaggedCell(priorityInner, p, 'priority', 'Priority')}</td>
       <td class="col-name">
         <div class="proj-name-cell">${projectNameHtml}</div>
         ${p.bigRock && p.bigRock !== 'N/A' ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${p.bigRock}</div>` : ''}
@@ -1043,7 +1181,8 @@ function render() {
       <td>${p.status && p.status !== 'Unknown' ? `<span class="status-badge ${statusClass}">${p.status}</span>` : '<span class="muted-cell">—</span>'}</td>
       <td><span class="team-badge">${p.team || '—'}</span></td>
       <td class="muted-cell">${workStarts || '—'}</td>
-      <td class="muted-cell">${p.shipping || '—'}</td>
+      <td>${flaggedCell(targetGaInner, p, 'targetGa', 'Target GA')}</td>
+      <td>${flaggedCell(endDateInner, p, 'endDate', 'End Date')}</td>
       <td>${getEditionsBadge(p.editions)}</td>
       <td class="muted-cell">${p.subTeam || '—'}</td>
       <td class="muted-cell">${p.champion || '—'}</td>
@@ -1061,6 +1200,8 @@ function render() {
       render();
     });
   });
+
+  bindChangeFlagTooltips(wrap);
 
   renderStoppedSection();
 }
@@ -1120,6 +1261,13 @@ const showDoneEl = document.getElementById('show-done-toggle');
 if (showDoneEl) {
   showDoneEl.addEventListener('change', e => {
     showDone = e.target.checked;
+    render();
+  });
+}
+const flaggedOnlyEl = document.getElementById('flagged-only-toggle');
+if (flaggedOnlyEl) {
+  flaggedOnlyEl.addEventListener('change', e => {
+    flaggedOnly = e.target.checked;
     render();
   });
 }
@@ -1204,6 +1352,9 @@ document.getElementById('clear-btn').addEventListener('click', () => {
   showDone = false;
   const showDoneToggle = document.getElementById('show-done-toggle');
   if (showDoneToggle) showDoneToggle.checked = false;
+  flaggedOnly = false;
+  const flaggedOnlyToggle = document.getElementById('flagged-only-toggle');
+  if (flaggedOnlyToggle) flaggedOnlyToggle.checked = false;
   
   // Reset all multi-select dropdowns
   document.querySelectorAll('.multi-select-dropdown[data-filter]').forEach(dropdown => {
@@ -1227,11 +1378,19 @@ async function loadData() {
   wrap.innerHTML = '<div class="empty-state"><span class="loading-spinner"></span> Loading data…</div>';
   
   try {
-    const response = await fetch('data/projects.json');
+    const [response, changeResp] = await Promise.all([
+      fetch('data/projects.json'),
+      fetch('data/changed-since-2026-07-02.json').catch(() => null),
+    ]);
     if (!response.ok) throw new Error('Failed to load data');
     const data = await response.json();
     vaultUrls = data.vaultUrls || {};
     allProjects = parseProjects(data.rows);
+    changeMap = {};
+    if (changeResp && changeResp.ok) {
+      const changeData = await changeResp.json();
+      changeMap = changeData.changes || {};
+    }
     buildFilterOptions();
     setupMultiSelectDropdowns();
     

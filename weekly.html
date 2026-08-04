@@ -308,6 +308,7 @@ const SECTIONS=[
   {id:'perf',title:'Performance to Plan',icon:'fa-layer-group',color:'var(--accent)'},
   {id:'drift',title:'Recent Timeline Drift',icon:'fa-clock-rotate-left',color:'var(--purple)'},
   {id:'stuck',title:'Stuck in Prototype / Build',icon:'fa-circle-pause',color:'var(--amber)'},
+  {id:'atrisk',title:'At Risk',icon:'fa-triangle-exclamation',color:'var(--red)'},
   {id:'stalled',title:'Stalled Projects',icon:'fa-ban',color:'var(--red)'},
   {id:'coverage',title:'Coverage Gaps',icon:'fa-users-slash',color:'var(--amber)'},
   {id:'reviews',title:'Overdue Reviews',icon:'fa-hourglass-half',color:'var(--amber)'},
@@ -379,7 +380,8 @@ function getVaultUrl(n){
   return null;
 }
 function getPhase(p){const ph=(p.phase||'').toLowerCase().replace(/_/g,'-');if(ph==='done'||ph==='completed'||ph==='complete')return'done';if(ph==='release')return'release';if(ph==='observe')return'observe';if(ph==='build'||ph==='in-progress')return'build';if(ph==='prototype'||ph==='proposal')return'prototype';if(ph==='stopped'||ph==='paused')return'stopped';const vs=(p.vaultStatus||'').toLowerCase();if(vs==='backlog')return'planned';if(vs==='off vault')return'off-vault';if(getVaultUrl(p.name))return'build';return'planned'}
-function parseProjects(rows){if(!rows||rows.length<2)return[];const h=rows[0],ci={};h.forEach((h,i)=>{ci[h.toLowerCase().trim()]=i});return rows.slice(1).map(row=>{const g=k=>{const i=ci[k.toLowerCase()];return i!==undefined?(row[i]||'').trim():''};const n=g('project')||g('project (ensure vault project is linked)');if(!n)return null;return{name:n,theme:g('pcb theme'),team:g('team'),subTeam:g('sub team')||g('subteam'),half:g('h'),rank:g('rank'),shipping:g('shipping'),status:g('status'),phase:g('phase'),vaultStatus:g('vault status'),starts:g('starts'),priority:g('priority'),partnerTeams:g('partner teams (internal)')}}).filter(p=>p&&p.theme)}
+function parseProjects(rows){if(!rows||rows.length<2)return[];const h=rows[0],ci={};h.forEach((h,i)=>{ci[h.toLowerCase().trim()]=i});return rows.slice(1).map(row=>{const g=k=>{const i=ci[k.toLowerCase()];return i!==undefined?(row[i]||'').trim():''};const n=g('project')||g('project (ensure vault project is linked)');if(!n)return null;return{name:n,theme:g('pcb theme'),team:g('team'),subTeam:g('sub team')||g('subteam'),half:g('h'),rank:g('rank'),shipping:g('shipping'),status:g('status'),phase:g('phase'),vaultStatus:g('vault status'),starts:g('starts'),priority:g('priority'),champion:g('champion'),partnerTeams:g('partner teams (internal)')}}).filter(p=>p&&p.theme)}
+function isTrackingPriority(p){const pr=(p.priority||'').toUpperCase().trim();return pr==='P0'||pr==='P1'||pr==='P2'}
 function dedupeProjects(ps){const s={},r=[];for(const p of ps){const k=(getVaultUrl(p.name)||p.name).toLowerCase();if(s[k]){if(!s[k].phase&&p.phase)s[k]=p;continue}s[k]=p;r.push(p)}return r.map(p=>{const k=(getVaultUrl(p.name)||p.name).toLowerCase();return s[k]||p})}
 function phaseBar(c,t){
   const planned=(c.planned||0)+(c['off-vault']||0);
@@ -397,29 +399,31 @@ function ring(pct,color,size=64){
 }
 
 const STRATEGIC_SNAPSHOT = {
-  asOf: 'Jul 6, 2026',
-  bottomLine: 'Cycle (Jun 29 – Jul 6): Mixed week — meaningful progress on foundational infra (TigerBeetle 2.0.0 released, Plus ToS deployed, +18.6 bps auth lift on ML routing) with a few risks needing leadership attention. Critical items: Automated retraining pipeline gated on evidence + review capacity, not tech; US Onboarding 7 P0s remain heading into Jul 6 launch week; Shop Pay NT VGS contract still unsigned; Amex excluded from payment routing launch pending investigation. Twenty projects shifted dates; four new projects kicked off (Managed Markets shipping, MM Order Hold, Truemed, Alipay/WeChat).',
+  asOf: 'Jul 31, 2026',
+  bottomLine: 'Cycle (Jul 24 – Jul 31): Progress on foundational infra — Funds Flow shadow copy at 100% for new merchants (99.5% success), LPM Smart Ordering ramped to 100% same day, Ant PAM lifecycle validated locally — but the week was dominated by slippage and blockers: 11 projects shifted milestones, 13 active Vault risks, 7 overdue releases. Top leadership items: Shop Pay Off Shopify × Agentic scope expansion (all-plan + fee differentiation) mid-Prototype; Chargeback policy blocked on trust-battery versioning; Retraining reforecast to mid-Aug on Beam→Flink safety; US Onboarding DCO rolled back on form drop-off. Seven new projects launched including Merchant Balance in Ledger (P1) and Automated high-risk order blocking (P2).',
   shipped: [],
   shifted: [
-    { name: 'Shop Pay Network Tokenization', url: 'https://vault.shopify.io/gsd/projects/49532', detail: 'Internal +57d (May 21 → Jul 17), LR +57d (Jun 4 → Jul 31). VGS contract still not signed. CAU performance baselining completed — Stripe real-time CAU reliance higher than expected; release phase delayed to prioritize CAU measurement. Multi-provider architectural changes made; sync consumer instrumented in dry-run mode; Shop Pay fallback resilience testing added. Nick Jones.', priority: 'P1' },
-    { name: 'Migrate Core Payment Methods to Global Vault', url: 'https://vault.shopify.io/gsd/projects/48371', detail: 'LR +105d (Jan 12 → Apr 27), GA +168d (Jan 30 → Jul 17). Completed GV direct-write cutover stack; six flags reached 100%; GV read flags resumed rollout; critical infra gap and race condition fixed. Confident on dev-complete this week; 2-week rollout to follow. Harry Venables.', priority: 'P2' },
-    { name: 'Sequential NITS classifier', url: 'https://vault.shopify.io/gsd/projects/49630', detail: 'LR +98d (Apr 7 → Jul 14). Non-SP shops added as training negatives made distribution materially harder; challenger model clears $ PRAUC operating metric. Team HC-constrained; catalog embeddings backfilling underway. Breno Freitas.', priority: 'P2' },
-    { name: 'Launch Alipay and WeChat Pay as Shopify Payments LPMs', url: 'https://vault.shopify.io/gsd/projects/51253', detail: 'EA +8d (Jul 2 → Jul 10), GA +92d (Jul 15 → Oct 15). Alipay paced to Stripe\'s 450/week onboarding limit; WeChat Pay GA gated on Stripe\'s "WeChat H5" onboarding API (not ready until late September). Splitting delivery: Alipay targeting Jul 31, WeChat mid-October. Andy Di.', priority: 'P2' },
-    { name: 'Integrate US Shopify Payments Onboarding with Policies and Completeness', url: 'https://vault.shopify.io/gsd/projects/50379', detail: 'LR +38d (Jun 2 → Jul 10). Late-stage bug hunts and exec review kept surfacing new P0s in the onboarding flow (broken business types, UX gaps, resubmission loop). Resolved 15 of 22 P0s; 7 remain heading into Jul 6 launch week. Team targeting Jul 7 resolution before US flight. Ahmad Dandachi.', priority: 'P1' },
-    { name: 'PAP-CLE Sync Removal', url: 'https://vault.shopify.io/gsd/projects/50269', detail: 'End Date +31d (Jul 15 → Aug 15). Two devs pulled mid-project to support Neobank and Stripe Stablecoin initiatives; a critical cross-org security/PII issue also surfaced and is under investigation. On-track at 67% otherwise — data mismatches down from ~28k to ~17k, Cohort 4 backfill complete, 17 Abacus M3c PRs merged. Shawn Shellenbarger.', priority: 'P2' },
-    { name: 'Managed Markets: Add shipping costs to managed pricing', url: 'https://vault.shopify.io/gsd/projects/51203', detail: 'End Date +29d (Jul 16 → Aug 14). Team cut for 3 weeks to fund regulatory changes, compressing the runway to the Jul 17 Build gate. Design work continued — settings modal simplified after stakeholder feedback and usability study is ready to ship. On-track at 33% but buffer is gone. Michelle Wu.', priority: 'P1' },
-    { name: 'Payments API internal refactor', url: 'https://vault.shopify.io/gsd/projects/48761', detail: 'GA +26d (Jun 12 → Jul 8). Deliberately slow phased rollout on a live money-movement path (staff → 1% → 10% → 30% → 100%); each soak surfaced small issues (load-test bottleneck, unhandled error) that reset the clock. Resume Payment Pipeline now at 100% Staff / 10% GA; final rollouts complete this week. Cautious pace, not a broken project. Owen Linton.', priority: 'P2' },
-    { name: 'Funds Flow — Centralize Funds Flow into Ledger', url: 'https://vault.shopify.io/gsd/projects/49401', detail: 'Internal +41d, LR +14d. Pre-prod unblocked with infrastructure fixes deployed; existing-merchant opening-balance stack shipped and moved to validation; net-new merchant validation resumed. Settlement validation awaiting pre-prod materialized transfers fix. DJ Patterson.', priority: 'P1' },
-    { name: 'Shopify Payments Payout Reconciliation Report', url: 'https://vault.shopify.io/gsd/projects/50240', detail: 'EA +35d (May 15 → Jun 19). Feature flag rollout progressed from 1% → 10% with plan to reach 100% by next week; staging pipeline issues resolved. Marcelo Mottalli.', priority: 'P2' },
-    { name: 'Chargeback rate policy with merchant guidance', url: 'https://vault.shopify.io/gsd/projects/50013', detail: 'GA +34d (May 27 → Jun 30). Fully enforced at 100%; extending to close out Stripe RDR integration subproject. Traian Svinți.', priority: 'P2' },
-    { name: 'First Managed Markets Order Hold: Default-on at scale', url: 'https://vault.shopify.io/gsd/projects/51204', detail: 'GA +15d (Jul 2 → Jul 17). Design decisions aligned (Adaptive Pricing ON for first order); money movement architecture designed; default-on experiment rolled back to 0%. Rebecca Samos Sanchez.', priority: 'P2' },
+    { name: 'Launch Alipay and WeChat Pay as Shopify Payments LPMs', url: 'https://vault.shopify.io/gsd/projects/51253', detail: 'EA +19d (Jul 2 → Jul 21), LR +15d (Jul 17 → Aug 1), GA +48d (Jul 15 → Sep 1). Alipay paced to Stripe 450/week onboarding; WeChat GA gated on Stripe WeChat H5 API (late Sep). Split delivery tracks. Andy Di.', priority: 'P2' },
+    { name: 'Shop Pay Installments Financing Package API', url: 'https://vault.shopify.io/gsd/projects/48997', detail: 'LR +119d (Apr 3 → Jul 31), GA +119d (Apr 10 → Aug 7). Blocking bugs on US % rollout; US validation cohort now 500/500 clean after fixes. Derek Chau.', priority: 'P1' },
+    { name: 'Sequential NITS classifier', url: 'https://vault.shopify.io/gsd/projects/49630', detail: 'LR +120d (Apr 7 → Aug 5). Re-anchored to Shadow release Aug 5 + 4 months observation. Breno Freitas.', priority: 'P2' },
+    { name: 'Shop Pay Installments in Australia', url: 'https://vault.shopify.io/gsd/projects/50706', detail: 'EA +30d (Jun 29 → Jul 29), LR +14d (Aug 3 → Aug 17), GA +14d (Aug 31 → Sep 14). Alpha Jul 29; LR/GA depend on exit criteria. Release review open. Eros Di Pede.', priority: 'P1' },
+    { name: 'Payments API internal refactor', url: 'https://vault.shopify.io/gsd/projects/48761', detail: 'GA +35d (Jun 12 → Jul 17). Fully rolled out; Done review submitted (freshness check). Ready to close, not extend Build. Owen Linton.', priority: 'P2' },
+    { name: 'Automatically enable / sort payment methods to optimize conversion', url: 'https://vault.shopify.io/gsd/projects/49514', detail: 'EA +40d (Apr 24 → Jun 3), GA +10d (May 24 → Jun 3). LPM Smart Ordering experiment launched Jul 16 and ramped to 100% same day for basic/professional. Sarah Leviseur.', priority: 'P1' },
+    { name: 'Optimize payment authorization rate through model driven transaction routing', url: 'https://vault.shopify.io/gsd/projects/49388', detail: 'LR +70d (Apr 16 → Jun 25), GA +56d (May 4 → Jun 29). A/B ramp path; 99% treatment targeted. Eugene Chae.', priority: 'P1' },
+    { name: 'Chargeback rate policy with merchant guidance', url: 'https://vault.shopify.io/gsd/projects/50013', detail: 'GA +34d (May 27 → Jun 30). Still blocked migrating shops on older versioned policies — trust battery lacks versioning support. Traian Svinți.', priority: 'P2' },
+    { name: 'Funds Flow — Centralize funds flow into ledger', url: 'https://vault.shopify.io/gsd/projects/49401', detail: 'Internal +41d, LR +14d. Shadow copy now 100% for new merchants (6.4k shops, 99.5% success); existing-merchant migration + opening-balance correction still open. DJ Patterson.', priority: 'P1' },
   ],
   risks: [
-    { name: 'Automated retraining pipeline for buyer risk ML models', url: 'https://vault.shopify.io/gsd/projects/50436', detail: 'AT RISK — Release gated on outstanding fix PRs being reviewed, post-merge evidence generation for all models, materialized selector metrics, PagerDuty-backed alerting, and shadow/evaluator evidence — none complete. Blockers labeled capacity + other. Needs additional review capacity or scoped decision on which evidence gates are required. Nate George.', priority: 'P2' },
-    { name: 'Integrate US Shopify Payments Onboarding with Policies and Completeness', url: 'https://vault.shopify.io/gsd/projects/50379', detail: 'AT RISK — 15 of 22 P0 blockers resolved; 7 remain heading into Jul 6 launch target week. PO Box restriction policy shipped, unblocking PayPal dependency. Team targeting Jul 7 resolution before US flight. Coordination dependencies for remaining P0s. Ahmad Dandachi.', priority: 'P1' },
-    { name: 'Optimize payment authorization rate through model driven transaction routing', url: 'https://vault.shopify.io/gsd/projects/49388', detail: 'AT RISK — Delivering +18.6 bps auth lift in the key decline score band. Amex identified as only card brand showing negative results — excluded from launch while ML engineering investigates underperformance. Planning 99% treatment ramp after US holiday. Needs Amex re-inclusion timeline. Eugene Chae.', priority: 'P1' },
-    { name: 'Shop Pay Network Tokenization', url: 'https://vault.shopify.io/gsd/projects/49532', detail: 'AT RISK — VGS contract still not signed. CAU performance baselining completed — Stripe real-time CAU reliance higher than expected; release phase delayed to prioritize CAU measurement and improve documentation. Multi-provider architectural changes made. Nick Jones.', priority: 'P1' },
-    { name: 'Cross Border Transactions (CBT) for Shop Pay Installments', url: 'https://vault.shopify.io/gsd/projects/50588', detail: 'PAUSED (~7 weeks, since May 14). Cross-border SPI for US/UK/CA — a TAM expansion that unlocks BNPL for every existing SPI merchant with zero merchant onboarding — sitting idle on a coordination blocker with no strategic review scheduled. Vault page hasn\'t been updated since May 14 and the planned Jun 21 resume did not happen. Ron Danino.', priority: 'P1' },
+    { name: 'Converge Shop Pay Off Shopify and Agentic plan', url: 'https://vault.shopify.io/gsd/projects/51327', detail: 'OFF TRACK — Prototype past Jul 17 end. Scope expansion: must support all merchant plans + on/off-platform fee differentiation for Agentic. Sizing this week before Build. Health check blocker. Mohamed Boukaa.', priority: 'P2' },
+    { name: 'First Managed Markets Order Hold: Default-on at scale', url: 'https://vault.shopify.io/gsd/projects/51204', detail: 'PAUSED / AT RISK since Jul 16 — alignment + health check; GA +56d. Design refinement before Sep 7 resume. Michelle Wu.', priority: 'P2' },
+    { name: 'Chargeback rate policy with merchant guidance', url: 'https://vault.shopify.io/gsd/projects/50013', detail: 'AT RISK — v3/v4 test shops only. Trust platform missing versioned policies in trust battery blocks migration of older-policy shops. ~1 week to resolve. Traian Svinți.', priority: 'P2' },
+    { name: 'Automated retraining pipeline for buyer risk ML models', url: 'https://vault.shopify.io/gsd/projects/50436', detail: 'AT RISK — Beam-v2→Flink-v3 migration exposed model-input safety gap; reforecasting release to mid-Aug. Capacity single-threaded. Nate George.', priority: 'P2' },
+    { name: 'Integrate US Shopify Payments Onboarding with Policies and Completeness', url: 'https://vault.shopify.io/gsd/projects/50379', detail: 'AT RISK — US DCO experiment rolled back 50%→0% (treatment ~53% vs control ~70% completion) due to form drop-off. Conversion fixes shipping; GA overdue. Ahmad Dandachi.', priority: 'P2' },
+    { name: 'Make Managed Markets compatible with EU & US Inbound customs clearance changes', url: 'https://vault.shopify.io/gsd/projects/51426', detail: 'OFF TRACK — EU withdrawal at 100%; CPSC eFiling MVP testing + 50k backfill gating rollout. Health check. Michelle Wu.', priority: 'P1' },
+    { name: 'Owning Policies and KYB with Adyen', url: 'https://vault.shopify.io/gsd/projects/50135', detail: 'OFF TRACK — 48 France merchants on OKYC (~77% approval) but go-live blocked on Adyen agreement + compliance; KYC rates below 65% target.', priority: 'P1' },
+    { name: 'Cross Border Transactions (CBT) for Shop Pay Installments', url: 'https://vault.shopify.io/gsd/projects/50588', detail: 'PAUSED — coordination blocker on SPI cross-border US/UK/CA. P1 TAM expansion idle since May. Ron Danino.', priority: 'P1' },
+    { name: 'Complete 3P REST PayPal integration before re-starting migration', url: 'https://vault.shopify.io/gsd/projects/48576', detail: 'OFF TRACK — past Jul 17 end; BNPL fix (~$10M GMV, 2/~10 PRs) + cleanup remaining. Volunteer owner for cleanup next week.', priority: 'P2' },
+    { name: 'Funds Flow - Centralize funds flow into ledger', url: 'https://vault.shopify.io/gsd/projects/49401', detail: 'AT RISK — new-merchant shadow at 100% but existing-merchant migration incomplete; end extended to Aug 6; internal milestone overdue. DJ Patterson.', priority: 'P1' },
   ],
 };
 
@@ -461,7 +465,7 @@ function renderPerf(list){
   const sel=selectedHalf==='all'?'All':selectedHalf;
   const oc={};PHASES.forEach(p=>oc[p]=0);list.forEach(p=>{const ph=getPhase(p);if(oc[ph]!==undefined)oc[ph]++;else oc.build++});
   const adv=(oc.prototype||0)+(oc.build||0)+(oc.observe||0)+(oc.release||0)+(oc.done||0),pct=list.length?(adv/list.length)*100:0,bar=phaseBar(oc,list.length);
-  let html=`<div class="overall-bar" style="display:flex;align-items:center;gap:24px"><div>${ring(pct,'#0088FF',80)}</div><div class="overall-info"><div class="overall-title">${Math.round(pct)}% Complete</div><div class="overall-sub">${adv} of ${list.length} ${sel} projects in progress or done</div><div style="margin-top:10px"><div class="phase-bar">${bar.s}</div><div class="phase-legend">${bar.l}</div></div></div></div>`;
+  let html=`<div class="overall-bar" style="display:flex;align-items:center;gap:24px"><div>${ring(pct,'#0088FF',80)}</div><div class="overall-info"><div class="overall-title">${Math.round(pct)}% Complete</div><div class="overall-sub">${adv} of ${list.length} ${sel} P0–P2 projects in progress or done</div><div style="margin-top:10px"><div class="phase-bar">${bar.s}</div><div class="phase-legend">${bar.l}</div></div></div></div>`;
   const byTheme={};list.forEach(p=>{const t=p.theme||'Other';if(!byTheme[t])byTheme[t]=[];byTheme[t].push(p)});
   perfThemeData=byTheme;
   html+='<div class="bubble-grid">';
@@ -700,6 +704,38 @@ window.driftSort=function(col){if(driftSortCol===col)driftSortDir*=-1;else{drift
 
 function parseDriftCsv(text){const lines=text.split('\n').filter(l=>l.trim());if(lines.length<2)return[];const result=[];for(let i=1;i<lines.length;i++){const cols=[];let cur='',inQ=false;for(let j=0;j<lines[i].length;j++){const c=lines[i][j];if(c==='"'){inQ=!inQ;continue}if(c===','&&!inQ){cols.push(cur.trim());cur='';continue}cur+=c}cols.push(cur.trim());if(cols.length>=8)result.push({team:cols[0],project:cols[1],phase:cols[2],milestone:cols[3],oldDate:cols[4],newDate:cols[5],days:cols[6],reason:cols[7],champion:cols[8]||''})}return result}
 
+function normalizeStatus(s){return(s||'').toLowerCase().trim().replace(/[\s-]+/g,'_')}
+function getAtRiskProjects(){
+  return dedupeProjects(allProjects.filter(p=>{
+    const s=normalizeStatus(p.status);
+    return(s==='at_risk'||s==='off_track')&&matchesHalf(p);
+  }));
+}
+function statusPill(status){
+  const s=normalizeStatus(status);
+  if(s==='off_track')return'<span class="pill pill-red">Off Track</span>';
+  if(s==='at_risk')return'<span class="pill pill-amber">At Risk</span>';
+  return`<span class="pill pill-gray">${status||'—'}</span>`;
+}
+function renderAtRisk(){
+  const list=getAtRiskProjects();
+  if(!list.length)return'<div class="empty">No at-risk or off-track projects for this filter.</div>';
+  const sel=selectedHalf==='all'?'All':selectedHalf;
+  let h=`<div style="margin-bottom:12px;font-size:12px;color:var(--text-secondary)">Projects marked <strong>at_risk</strong> or <strong>off_track</strong> in the stack-ranked sheet (${sel} · ${list.length}).</div>`;
+  h+='<div class="card" style="overflow:auto"><table class="data-table"><thead><tr><th>Project</th><th>Team</th><th>Priority</th><th>Status</th><th>Phase</th><th>Est. Ship</th><th>Champion</th></tr></thead><tbody>';
+  const sorted=[...list].sort((a,b)=>{
+    const so=s=>(normalizeStatus(s.status)==='off_track'?0:1);
+    const d=so(a)-so(b);if(d)return d;
+    return(a.team||'').localeCompare(b.team||'')||(a.name||'').localeCompare(b.name||'');
+  });
+  sorted.forEach(p=>{
+    const u=getVaultUrl(p.name);
+    const ph=getPhase(p);
+    h+=`<tr><td style="font-weight:600">${link(p.name,u)}</td><td>${p.team||'—'}</td><td>${prioPill(p.priority)}</td><td>${statusPill(p.status)}</td><td>${pillPhase(ph)}</td><td style="white-space:nowrap;color:var(--text-muted)">${p.shipping||'—'}</td><td style="white-space:nowrap">${p.champion||'—'}</td></tr>`;
+  });
+  return h+'</tbody></table></div>';
+}
+
 function renderStalled(){
   const e=commentary.stalledP1s||[];
   const auto=allProjects.filter(p=>getPhase(p)==='stopped'&&matchesHalf(p)&&(p.rank||'').toUpperCase()!=='N/A');
@@ -748,13 +784,13 @@ function renderShipped(){
 function getCounts(){
   const stuckCount=(commentary.stuckInPrototype||[]).length+(commentary.extendedBuild||[]).length;
   const stalledCount=(commentary.stalledP1s||[]).length;
-  return{stuck:stuckCount,stalled:stalledCount,reviews:(commentary.overdueReviews||[]).length}
+  return{stuck:stuckCount,atrisk:getAtRiskProjects().length,stalled:stalledCount,reviews:(commentary.overdueReviews||[]).length}
 }
 
 function navigate(viewId){
   currentView=viewId;
-  const list=dedupeProjects(allProjects.filter(p=>matchesHalf(p)&&(p.rank||'').toUpperCase()!=='N/A'));
-  const renderers={perf:()=>renderPerf(list),drift:renderDrift,stuck:renderStuck,stalled:renderStalled,coverage:renderCoverage,reviews:renderReviews};
+  const list=dedupeProjects(allProjects.filter(p=>matchesHalf(p)&&(p.rank||'').toUpperCase()!=='N/A'&&isTrackingPriority(p)));
+  const renderers={perf:()=>renderPerf(list),drift:renderDrift,stuck:renderStuck,atrisk:renderAtRisk,stalled:renderStalled,coverage:renderCoverage,reviews:renderReviews};
   const sec=SECTIONS.find(s=>s.id===viewId);
   document.getElementById('headerTitle').textContent=sec?sec.title:'Weekly Snapshot';
   document.getElementById('content').innerHTML=(renderers[viewId]?renderers[viewId]():'')+'<div id="quickcomments" style="margin-top:24px"></div>';
